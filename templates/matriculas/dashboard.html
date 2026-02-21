@@ -1,0 +1,59 @@
+﻿{% extends 'base.html' %}
+{% block title %}Dashboard - {{ SCHOOL_NAME }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-grid me-2"></i>Panel Principal</h2>
+</div>
+
+{% if user.es_secretaria %}
+<!-- Dashboard Secretaria/Admin -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <h3 class="text-warning">{{ pendientes }}</h3>
+                <p class="mb-0">Pendientes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body text-center">
+                <h3 class="text-info">{{ en_revision }}</h3>
+                <p class="mb-0">En RevisiÃ³n</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <h3 class="text-success">{{ aprobadas }}</h3>
+                <p class="mb-0">Aprobadas</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Dashboard Representante -->
+<div class="row">
+    <div class="col-12">
+        <h5>Mis Solicitudes de MatrÃ­cula</h5>
+        {% for matricula in mis_matriculas %}
+        <div class="card mb-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ matricula.estudiante }}</strong><br>
+                    <small class="text-muted">{{ matricula.codigo }}</small>
+                </div>
+                <span class="badge bg-{% if matricula.estado == 'APROBADA' %}success{% elif matricula.estado == 'RECHAZADA' %}danger{% else %}warning text-dark{% endif %}">
+                    {{ matricula.get_estado_display }}
+                </span>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No tiene solicitudes registradas.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,51 @@
+﻿# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+#  DEPENDENCIAS DEL PROYECTO
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+# Framework principal
+Django==4.2.9
+djangorestframework==3.14.0
+
+# Base de datos
+psycopg2-binary==2.9.9
+
+# Variables de entorno
+python-decouple==3.8
+python-dotenv==1.0.0
+
+# AutenticaciÃ³n
+django-allauth==0.61.1
+
+# Formularios y UI
+django-crispy-forms==2.1
+crispy-bootstrap5==0.7
+
+# ImÃ¡genes y archivos
+Pillow==10.2.0
+
+# PDF
+reportlab==4.1.0
+weasyprint==61.2
+
+# Excel
+openpyxl==3.1.2
+
+# Email
+django-anymail==10.2
+
+# Utilidades
+django-extensions==3.2.3
+django-filter==23.5
+shortuuid==1.0.13
+
+# Seguridad
+django-axes==6.3.0
+
+# Servidor de producciÃ³n
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Testing
+pytest==7.4.4
+pytest-django==4.7.0
+factory-boy==3.3.0
