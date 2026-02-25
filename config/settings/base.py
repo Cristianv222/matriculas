@@ -116,7 +116,7 @@ LOGIN_REDIRECT_URL = '/matriculas/dashboard/'
 LOGOUT_REDIRECT_URL = '/usuarios/login/'
 
 # ConfiguraciÃ³n de la instituciÃ³n (desde .env)
-SCHOOL_NAME = config('SCHOOL_NAME', default='Escuela Fiscomisional San Francisco de Quito')
+SCHOOL_NAME = config('SCHOOL_NAME', default='San Francisco de Quito')
 SCHOOL_AMIE = config('SCHOOL_AMIE', default='')
 SCHOOL_CITY = config('SCHOOL_CITY', default='Quito')
 SCHOOL_PROVINCE = config('SCHOOL_PROVINCE', default='Pichincha')
