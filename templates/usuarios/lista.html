@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-people me-2" style="color:var(--acento);"></i>Usuarios del sistema</h1>
+            <nav aria-label="breadcrumb"><ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'usuarios:dashboard-admin' %}">Inicio</a></li>
+                <li class="breadcrumb-item active">Usuarios</li>
+            </ol></nav>
+        </div>
+        {% if user.es_admin %}
+        <a href="{% url 'usuarios:crear' %}" class="btn btn-institucional btn-sm">
+            <i class="bi bi-person-plus me-1"></i>Nuevo usuario
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{# Filtros #}
+<div class="card mb-3">
+    <div class="card-body py-2 px-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-12 col-sm-5">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="q" class="form-control form-control-sm"
+                       placeholder="Nombre, usuario, cédula, correo…"
+                       value="{{ q }}">
+            </div>
+            <div class="col-6 col-sm-3">
+                <label class="form-label">Rol</label>
+                <select name="rol" class="form-select form-select-sm">
+                    <option value="">Todos los roles</option>
+                    {% for valor, etiqueta in roles %}
+                    <option value="{{ valor }}" {% if rol == valor %}selected{% endif %}>{{ etiqueta }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-institucional">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+                {% if q or rol %}
+                <a href="{% url 'usuarios:lista' %}" class="btn btn-sm btn-outline-secondary ms-1">
+                    <i class="bi bi-x"></i>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Tabla #}
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <span>Resultados
+            <span class="text-muted ms-1" style="font-size:.82rem;font-weight:400;">
+                — {{ page_obj.paginator.count }} usuario(s)
+            </span>
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table tabla-institucional mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:46px;"></th>
+                        <th>Nombre completo</th>
+                        <th>Usuario</th>
+                        <th>Cédula</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr>
+                        <td class="text-center">
+                            {% if u.foto %}
+                            <img src="{{ u.foto.url }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;">
+                            {% else %}
+                            {% with color=u.rol|lower %}
+                            <div style="width:34px;height:34px;border-radius:50%;
+                                background:{% if u.rol == 'ADMIN' %}#dc3545{% elif u.rol == 'SECRETARIA' %}#0d6efd{% elif u.rol == 'DOCENTE' %}#6f42c1{% else %}#198754{% endif %};
+                                display:flex;align-items:center;justify-content:center;
+                                color:white;font-size:.75rem;font-weight:700;margin:auto;">
+                                {{ u.last_name|first|upper }}{{ u.first_name|first|upper }}
+                            </div>
+                            {% endwith %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="font-weight:500;">{{ u.get_full_name|default:u.username }}</span>
+                            {% if not u.is_verified %}
+                            <i class="bi bi-envelope-exclamation ms-1" style="color:#c8a84b;font-size:.8rem;" title="Email no verificado"></i>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:.83rem;color:var(--gris-medio);">{{ u.username }}</td>
+                        <td style="font-size:.83rem;">{{ u.cedula|default:"—" }}</td>
+                        <td style="font-size:.83rem;">{{ u.email|default:"—" }}</td>
+                        <td style="font-size:.83rem;">{{ u.telefono|default:"—" }}</td>
+                        <td>
+                            <span style="font-size:.72rem;font-weight:600;padding:.2rem .6rem;border-radius:3px;
+                                background:{% if u.rol == 'ADMIN' %}#f8d7da{% elif u.rol == 'SECRETARIA' %}#cff4fc{% elif u.rol == 'DOCENTE' %}#e2d9f3{% else %}#d1e7dd{% endif %};
+                                color:{% if u.rol == 'ADMIN' %}#58151c{% elif u.rol == 'SECRETARIA' %}#055160{% elif u.rol == 'DOCENTE' %}#3d1a78{% else %}#0a3622{% endif %};">
+                                {{ u.get_rol_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if u.is_active %}
+                            <span style="font-size:.75rem;color:#0a3622;background:#d1e7dd;padding:.15rem .55rem;border-radius:3px;font-weight:600;">Activo</span>
+                            {% else %}
+                            <span style="font-size:.75rem;color:#41464b;background:#e2e3e5;padding:.15rem .55rem;border-radius:3px;font-weight:600;">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'usuarios:detalle' u.pk %}" class="btn btn-sm btn-outline-primary" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if user.es_admin %}
+                                <a href="{% url 'usuarios:editar' u.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-people d-block mb-2" style="font-size:2rem;"></i>
+                            No se encontraron usuarios
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white border-top py-2 d-flex justify-content-center">
+        <nav><ul class="pagination pagination-sm mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&rol={{ rol }}"><i class="bi bi-chevron-left"></i></a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}&q={{ q }}&rol={{ rol }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&rol={{ rol }}"><i class="bi bi-chevron-right"></i></a></li>
+            {% endif %}
+        </ul></nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

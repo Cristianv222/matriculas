@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}{{ periodo.nombre }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-calendar3 me-2" style="color:var(--acento);"></i>{{ periodo.nombre }}</h1>
+            <nav aria-label="breadcrumb"><ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'periodos:periodo-lista' %}">Períodos</a></li>
+                <li class="breadcrumb-item active">{{ periodo.nombre }}</li>
+            </ol></nav>
+        </div>
+        <div class="d-flex gap-2">
+            {% if user.es_admin %}
+            <a href="{% url 'periodos:paralelo-crear' %}" class="btn btn-sm btn-institucional">
+                <i class="bi bi-plus me-1"></i>Agregar paralelo
+            </a>
+            <a href="{% url 'periodos:periodo-editar' periodo.pk %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil me-1"></i>Editar período
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Info del período #}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Año lectivo</div>
+            <div style="font-size:1rem;font-weight:600;color:var(--azul-marino);margin-top:.25rem;">
+                {{ periodo.fecha_inicio|date:"d/m/Y" }} — {{ periodo.fecha_fin|date:"d/m/Y" }}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Matrículas</div>
+            <div style="font-size:1rem;font-weight:600;color:var(--azul-marino);margin-top:.25rem;">
+                {{ periodo.fecha_inicio_matriculas|date:"d/m/Y" }} — {{ periodo.fecha_fin_matriculas|date:"d/m/Y" }}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Total paralelos</div>
+            <div class="stat-value">{{ paralelos|length }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Estado matrículas</div>
+            <div style="margin-top:.4rem;">
+                {% if periodo.matriculas_abiertas %}
+                <span style="font-size:.82rem;font-weight:600;color:#0a3622;background:#d1e7dd;padding:.3rem .75rem;border-radius:3px;">
+                    <i class="bi bi-check-circle me-1"></i>Abiertas
+                </span>
+                {% elif periodo.matriculas_extraordinarias_abiertas %}
+                <span style="font-size:.82rem;font-weight:600;color:#7a5800;background:#fff3cd;padding:.3rem .75rem;border-radius:3px;">
+                    <i class="bi bi-star me-1"></i>Extraordinarias
+                </span>
+                {% else %}
+                <span style="font-size:.82rem;font-weight:600;color:#41464b;background:#e2e3e5;padding:.3rem .75rem;border-radius:3px;">
+                    <i class="bi bi-lock me-1"></i>Cerradas
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Tabla de paralelos #}
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-diagram-3 me-2"></i>Paralelos del período</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table tabla-institucional mb-0">
+                <thead>
+                    <tr>
+                        <th>Nivel</th>
+                        <th>Paralelo</th>
+                        <th>Jornada</th>
+                        <th>Cupo máx.</th>
+                        <th>Matriculados</th>
+                        <th>Disponible</th>
+                        <th>Ocupación</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in paralelos %}
+                    <tr>
+                        <td style="font-weight:500;">{{ p.nivel.nombre }}</td>
+                        <td>
+                            <span style="font-size:.9rem;font-weight:700;color:var(--azul-marino);">{{ p.nombre }}</span>
+                        </td>
+                        <td style="font-size:.83rem;">{{ p.get_jornada_display }}</td>
+                        <td style="text-align:center;">{{ p.cupo_maximo }}</td>
+                        <td style="text-align:center;font-weight:600;">{{ p.matriculados_aprobados }}</td>
+                        <td style="text-align:center;">
+                            <span style="font-weight:600;color:{% if p.cupo_disponible == 0 %}#842029{% elif p.cupo_disponible <= 5 %}#7a5800{% else %}#0a3622{% endif %};">
+                                {{ p.cupo_disponible }}
+                            </span>
+                        </td>
+                        <td style="min-width:100px;">
+                            <div style="background:#e9ecef;border-radius:3px;height:8px;overflow:hidden;">
+                                <div style="height:100%;border-radius:3px;width:{{ p.porcentaje_ocupacion }}%;
+                                    background:{% if p.porcentaje_ocupacion >= 95 %}#dc3545{% elif p.porcentaje_ocupacion >= 70 %}#c8a84b{% else %}#198754{% endif %};
+                                    transition:width .3s;">
+                                </div>
+                            </div>
+                            <div style="font-size:.72rem;color:var(--gris-medio);text-align:right;margin-top:.15rem;">
+                                {{ p.porcentaje_ocupacion }}%
+                            </div>
+                        </td>
+                        <td>
+                            {% if user.es_admin %}
+                            <a href="{% url 'periodos:paralelo-editar' p.pk %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted" style="font-size:.875rem;">
+                            <i class="bi bi-diagram-3 d-block mb-2" style="font-size:1.5rem;"></i>
+                            No hay paralelos en este período.
+                            {% if user.es_admin %}
+                            <div class="mt-2">
+                                <a href="{% url 'periodos:paralelo-crear' %}" class="btn btn-sm btn-institucional">
+                                    <i class="bi bi-plus me-1"></i>Agregar paralelo
+                                </a>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

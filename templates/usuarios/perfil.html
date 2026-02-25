@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-person-circle me-2" style="color:var(--acento);"></i>Mi Perfil</h1>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <form method="post" enctype="multipart/form-data" action="{% url 'usuarios:perfil' %}" novalidate>
+            {% csrf_token %}
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-person me-2"></i>Datos personales</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombres</label>{{ form.first_name }}
+                            {% if form.first_name.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.first_name.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Apellidos</label>{{ form.last_name }}
+                            {% if form.last_name.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.last_name.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cédula</label>{{ form.cedula }}
+                            {% if form.cedula.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.cedula.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo electrónico</label>{{ form.email }}
+                            {% if form.email.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.email.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>{{ form.telefono }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono alternativo</label>{{ form.telefono_alt }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Dirección</label>{{ form.direccion }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ciudad</label>{{ form.ciudad }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sector</label>{{ form.sector }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Foto de perfil</label>
+                            {{ form.foto }}
+                            {% if user.foto %}
+                            <div class="mt-2">
+                                <img src="{{ user.foto.url }}" style="height:70px;border-radius:50%;border:2px solid var(--gris-borde);">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{% url 'usuarios:cambio-password' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-shield-lock me-1"></i>Cambiar contraseña
+                </a>
+                <button type="submit" class="btn btn-institucional">
+                    <i class="bi bi-check2 me-1"></i>Guardar cambios
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body text-center py-3">
+                <div style="width:72px;height:72px;border-radius:50%;margin:0 auto .75rem;overflow:hidden;
+                    background:var(--azul-marino);display:flex;align-items:center;justify-content:center;">
+                    {% if user.foto %}
+                    <img src="{{ user.foto.url }}" style="width:100%;height:100%;object-fit:cover;">
+                    {% else %}
+                    <span style="font-family:'Lora',serif;font-size:1.6rem;font-weight:700;color:white;">
+                        {{ user.last_name|first|upper }}{{ user.first_name|first|upper }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div style="font-weight:600;font-size:.95rem;color:var(--azul-marino);">{{ user.nombre_completo }}</div>
+                <div style="font-size:.78rem;color:var(--gris-medio);">{{ user.get_rol_display }}</div>
+                <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.5rem;">@{{ user.username }}</div>
+            </div>
+            <div style="border-top:1px solid var(--gris-borde);padding:.75rem 1.25rem;">
+                <a href="{% url 'usuarios:cambio-password' %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-shield-lock me-1"></i>Cambiar contraseña
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

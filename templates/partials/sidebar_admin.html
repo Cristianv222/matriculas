@@ -1,0 +1,56 @@
+{% load static %}
+
+<div class="sidebar-section">
+    <div class="sidebar-section-label">Principal</div>
+    <a href="{% url 'usuarios:dashboard-admin' %}" class="sidebar-link">
+        <i class="bi bi-grid-1x2"></i> Panel principal
+    </a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-label">Matrículas</div>
+    <a href="{% url 'matriculas:lista' %}" class="sidebar-link">
+        <i class="bi bi-file-earmark-text"></i> Todas las matrículas
+    </a>
+    <a href="{% url 'matriculas:lista' %}?estado=PENDIENTE" class="sidebar-link">
+        <i class="bi bi-hourglass-split"></i> Pendientes
+        {% if pendientes_count %}
+        <span class="badge-sidebar">{{ pendientes_count }}</span>
+        {% endif %}
+    </a>
+    <a href="{% url 'matriculas:lista' %}?estado=EN_REVISION" class="sidebar-link">
+        <i class="bi bi-search"></i> En revisión
+    </a>
+    <a href="{% url 'matriculas:lista' %}?estado=APROBADA" class="sidebar-link">
+        <i class="bi bi-check-circle"></i> Aprobadas
+    </a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-label">Gestión</div>
+    <a href="{% url 'estudiantes:lista' %}" class="sidebar-link">
+        <i class="bi bi-people"></i> Estudiantes
+    </a>
+    <a href="{% url 'periodos:paralelo-lista' %}" class="sidebar-link">
+        <i class="bi bi-diagram-3"></i> Paralelos
+    </a>
+    <a href="{% url 'periodos:periodo-lista' %}" class="sidebar-link">
+        <i class="bi bi-calendar3"></i> Períodos académicos
+    </a>
+</div>
+
+{% if user.es_admin %}
+<div class="sidebar-section">
+    <div class="sidebar-section-label">Administración</div>
+    <a href="{% url 'usuarios:lista' %}" class="sidebar-link">
+        <i class="bi bi-person-badge"></i> Usuarios del sistema
+    </a>
+    <a href="{% url 'reportes:dashboard' %}" class="sidebar-link">
+        <i class="bi bi-bar-chart-line"></i> Reportes
+    </a>
+    <a href="/admin/" class="sidebar-link" target="_blank">
+        <i class="bi bi-gear"></i> Panel Django
+        <i class="bi bi-box-arrow-up-right ms-auto" style="font-size:.7rem;color:var(--gris-medio);"></i>
+    </a>
+</div>
+{% endif %}

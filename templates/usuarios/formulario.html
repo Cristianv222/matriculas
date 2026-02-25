@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo|default:"Usuario" }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-person-badge me-2" style="color:var(--acento);"></i>{{ titulo|default:"Usuario" }}</h1>
+            <nav aria-label="breadcrumb"><ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'usuarios:lista' %}">Usuarios</a></li>
+                <li class="breadcrumb-item active">{{ titulo }}</li>
+            </ol></nav>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    {# Columna principal: formulario #}
+    <div class="col-lg-8">
+        <form method="post" enctype="multipart/form-data" action="{% if form.instance.pk %}{% url 'usuarios:editar' form.instance.pk %}{% else %}{% url 'usuarios:crear' %}{% endif %}" novalidate>
+            {% csrf_token %}
+
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-person me-2"></i>Datos personales</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.first_name.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.last_name.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cédula / Pasaporte</label>
+                            {{ form.cedula }}
+                            {% if form.cedula.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.cedula.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha de nacimiento</label>
+                            {{ form.fecha_nacimiento }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            {{ form.telefono }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono alternativo</label>
+                            {{ form.telefono_alt }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Dirección</label>
+                            {{ form.direccion }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ciudad</label>
+                            {{ form.ciudad }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sector / Barrio</label>
+                            {{ form.sector }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Foto</label>
+                            {{ form.foto }}
+                            {% if form.instance.foto %}
+                            <div class="mt-2">
+                                <img src="{{ form.instance.foto.url }}" style="height:70px;border-radius:4px;border:1px solid var(--gris-borde);">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-at me-2"></i>Credenciales y acceso</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre de usuario <span class="text-danger">*</span></label>
+                            {{ form.username }}
+                            {% if form.username.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.username.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo electrónico <span class="text-danger">*</span></label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.email.errors|first }}</div>{% endif %}
+                        </div>
+
+                        {# Solo mostrar campos de contraseña en creación #}
+                        {% if not form.instance.pk %}
+                        <div class="col-md-6">
+                            <label class="form-label">Contraseña <span class="text-danger">*</span></label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.password1.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Confirmar contraseña <span class="text-danger">*</span></label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.password2.errors|first }}</div>{% endif %}
+                        </div>
+                        {% else %}
+                        <div class="col-12">
+                            <div style="background:var(--fondo);border:1px solid var(--gris-borde);border-radius:4px;padding:.65rem 1rem;font-size:.83rem;color:var(--gris-medio);">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Para cambiar la contraseña use el enlace
+                                <a href="{% url 'usuarios:cambio-password' %}" style="color:var(--azul-claro);">cambiar contraseña</a>.
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><i class="bi bi-shield me-2"></i>Rol y estado</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Rol en el sistema <span class="text-danger">*</span></label>
+                            {{ form.rol }}
+                            <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.3rem;">
+                                Define qué puede ver y hacer el usuario en el sistema.
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex flex-column gap-2 justify-content-end pb-1">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}" style="font-size:.875rem;">
+                                    Cuenta activa
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ form.is_verified }}
+                                <label class="form-check-label" for="{{ form.is_verified.id_for_label }}" style="font-size:.875rem;">
+                                    Email verificado
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if form.non_field_errors %}
+            <div style="border-left:4px solid #dc3545;background:#f8d7da;color:#842029;padding:.65rem 1rem;border-radius:4px;font-size:.85rem;margin-bottom:1rem;">
+                {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{% url 'usuarios:lista' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x me-1"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-institucional">
+                    <i class="bi bi-check2 me-1"></i>{{ accion|default:"Guardar" }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {# Columna lateral: ayuda de roles #}
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-question-circle me-2"></i>Roles del sistema</div>
+            <div class="card-body p-0">
+                {% for rol, desc, permisos in roles_info %}
+                <div style="padding:.85rem 1rem;border-bottom:1px solid var(--gris-borde);">
+                    <div style="font-size:.82rem;font-weight:600;color:var(--azul-marino);margin-bottom:.3rem;">
+                        {{ rol }}
+                    </div>
+                    <div style="font-size:.78rem;color:var(--gris-medio);line-height:1.5;">{{ desc }}</div>
+                    <ul style="margin:.4rem 0 0;padding-left:1rem;font-size:.76rem;color:#495057;">
+                        {% for p in permisos %}
+                        <li>{{ p }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% empty %}
+                <div style="padding:.85rem 1rem;">
+                    <div class="mb-2" style="font-size:.82rem;">
+                        <strong style="color:var(--azul-marino);">🛡️ Administrador</strong>
+                        <div style="font-size:.78rem;color:var(--gris-medio);">Acceso total al sistema</div>
+                    </div>
+                    <div class="mb-2" style="font-size:.82rem;">
+                        <strong style="color:var(--azul-marino);">📋 Secretaria</strong>
+                        <div style="font-size:.78rem;color:var(--gris-medio);">Gestiona y aprueba matrículas, ve estudiantes y reportes</div>
+                    </div>
+                    <div class="mb-2" style="font-size:.82rem;">
+                        <strong style="color:var(--azul-marino);">👨‍👩‍👦 Representante</strong>
+                        <div style="font-size:.78rem;color:var(--gris-medio);">Solo puede registrar sus hijos y enviar solicitudes</div>
+                    </div>
+                    <div style="font-size:.82rem;">
+                        <strong style="color:var(--azul-marino);">📚 Docente</strong>
+                        <div style="font-size:.78rem;color:var(--gris-medio);">Solo consulta listas de estudiantes de sus paralelos</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

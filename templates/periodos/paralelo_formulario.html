@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo|default:"Paralelo" }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-diagram-3 me-2" style="color:var(--acento);"></i>{{ titulo|default:"Paralelo" }}</h1>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'periodos:paralelo-lista' %}">Paralelos</a></li>
+            <li class="breadcrumb-item active">{{ titulo }}</li>
+        </ol></nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-sliders me-2"></i>Configuración del paralelo</div>
+            <div class="card-body">
+                <form method="post" action="{% if form.instance.pk %}{% url 'periodos:paralelo-editar' form.instance.pk %}{% else %}{% url 'periodos:paralelo-crear' %}{% endif %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Período académico <span class="text-danger">*</span></label>
+                            {{ form.periodo }}
+                            {% if form.periodo.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.periodo.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Nivel / Grado <span class="text-danger">*</span></label>
+                            {{ form.nivel }}
+                            {% if form.nivel.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.nivel.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Paralelo <span class="text-danger">*</span></label>
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.nombre.errors|first }}</div>{% endif %}
+                            <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.2rem;">Ej: A, B, C</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Jornada</label>
+                            {{ form.jornada }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cupo máximo</label>
+                            {{ form.cupo_maximo }}
+                            {% if form.cupo_maximo.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.cupo_maximo.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Observaciones</label>
+                            {{ form.observaciones }}
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div style="border-left:4px solid #dc3545;background:#f8d7da;color:#842029;padding:.65rem 1rem;border-radius:4px;font-size:.85rem;margin-top:1rem;">
+                        {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <a href="{% url 'periodos:paralelo-lista' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-institucional">
+                            <i class="bi bi-check2 me-1"></i>{{ accion|default:"Guardar" }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# Info cupo si editando #}
+        {% if form.instance.pk %}
+        <div class="card mt-3">
+            <div class="card-header"><i class="bi bi-bar-chart me-2"></i>Estado actual del cupo</div>
+            <div class="card-body">
+                <div class="row g-3 text-center">
+                    <div class="col-4">
+                        <div style="font-size:.7rem;color:var(--gris-medio);text-transform:uppercase;letter-spacing:.06em;">Máximo</div>
+                        <div style="font-size:1.5rem;font-family:'Lora',serif;font-weight:700;color:var(--azul-marino);">{{ form.instance.cupo_maximo }}</div>
+                    </div>
+                    <div class="col-4">
+                        <div style="font-size:.7rem;color:var(--gris-medio);text-transform:uppercase;letter-spacing:.06em;">Matriculados</div>
+                        <div style="font-size:1.5rem;font-family:'Lora',serif;font-weight:700;color:var(--azul-marino);">{{ form.instance.matriculados_aprobados }}</div>
+                    </div>
+                    <div class="col-4">
+                        <div style="font-size:.7rem;color:var(--gris-medio);text-transform:uppercase;letter-spacing:.06em;">Disponible</div>
+                        <div style="font-size:1.5rem;font-family:'Lora',serif;font-weight:700;color:{% if form.instance.cupo_disponible == 0 %}#dc3545{% else %}#198754{% endif %};">
+                            {{ form.instance.cupo_disponible }}
+                        </div>
+                    </div>
+                </div>
+                <div style="background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;margin-top:.75rem;">
+                    <div style="height:100%;border-radius:4px;width:{{ form.instance.porcentaje_ocupacion }}%;
+                        background:{% if form.instance.porcentaje_ocupacion >= 95 %}#dc3545{% elif form.instance.porcentaje_ocupacion >= 70 %}#c8a84b{% else %}#198754{% endif %};">
+                    </div>
+                </div>
+                <div style="text-align:right;font-size:.75rem;color:var(--gris-medio);margin-top:.2rem;">
+                    {{ form.instance.porcentaje_ocupacion }}% ocupado
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

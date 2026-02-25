@@ -1,0 +1,38 @@
+{% load static %}
+
+<div class="sidebar-section">
+    <div class="sidebar-section-label">Mi portal</div>
+    <a href="{% url 'usuarios:dashboard-representante' %}" class="sidebar-link">
+        <i class="bi bi-grid-1x2"></i> Inicio
+    </a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-label">Mis hijos</div>
+    <a href="{% url 'estudiantes:lista' %}" class="sidebar-link">
+        <i class="bi bi-person-lines-fill"></i> Mis estudiantes
+    </a>
+    <a href="{% url 'estudiantes:crear' %}" class="sidebar-link">
+        <i class="bi bi-person-plus"></i> Registrar estudiante
+    </a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-label">Matrículas</div>
+    <a href="{% url 'matriculas:lista' %}" class="sidebar-link">
+        <i class="bi bi-file-earmark-text"></i> Mis solicitudes
+    </a>
+    <a href="{% url 'matriculas:crear' %}" class="sidebar-link">
+        <i class="bi bi-plus-circle"></i> Nueva solicitud
+    </a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-label">Mi cuenta</div>
+    <a href="{% url 'usuarios:perfil' %}" class="sidebar-link">
+        <i class="bi bi-person-circle"></i> Mi perfil
+    </a>
+    <a href="{% url 'usuarios:cambio-password' %}" class="sidebar-link">
+        <i class="bi bi-shield-lock"></i> Cambiar contraseña
+    </a>
+</div>

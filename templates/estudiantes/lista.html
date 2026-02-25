@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Estudiantes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-people me-2" style="color:var(--acento);"></i>Estudiantes</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+                    <li class="breadcrumb-item active">Estudiantes</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{% url 'estudiantes:crear' %}" class="btn btn-institucional btn-sm">
+            <i class="bi bi-person-plus me-1"></i>Nuevo estudiante
+        </a>
+    </div>
+</div>
+
+{# Filtros #}
+<div class="card mb-3">
+    <div class="card-body py-2 px-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-12 col-sm-5">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="q" class="form-control form-control-sm"
+                       placeholder="Nombre, apellido o cédula…"
+                       value="{{ busqueda_form.q.value|default:'' }}">
+            </div>
+            <div class="col-6 col-sm-2">
+                <label class="form-label">Género</label>
+                {{ busqueda_form.genero }}
+            </div>
+            <div class="col-6 col-sm-2">
+                <label class="form-label">Ciudad</label>
+                {{ busqueda_form.ciudad }}
+            </div>
+            <div class="col-auto d-flex align-items-end gap-2">
+                <div class="form-check mb-1">
+                    {{ busqueda_form.atencion_especial }}
+                    <label class="form-check-label" style="font-size:.82rem;">
+                        Atención especial
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-sm btn-institucional">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+                {% if request.GET.q or request.GET.genero or request.GET.ciudad %}
+                <a href="{% url 'estudiantes:lista' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-x"></i>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Tabla #}
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <span>Resultados — <span style="font-size:.82rem;font-weight:400;color:var(--gris-medio);">{{ total|default:estudiantes|length }} estudiante(s)</span></span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table tabla-institucional mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:46px;"></th>
+                        <th>Apellidos y Nombres</th>
+                        <th>Cédula</th>
+                        <th>Edad</th>
+                        <th>Género</th>
+                        <th>Ciudad</th>
+                        <th>Representante</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for est in estudiantes %}
+                    <tr>
+                        <td class="text-center">
+                            {% if est.foto %}
+                            <img src="{{ est.foto.url }}"
+                                 style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                            {% else %}
+                            <div style="width:36px;height:36px;border-radius:50%;background:var(--azul-marino);
+                                        display:flex;align-items:center;justify-content:center;
+                                        color:white;font-size:.78rem;font-weight:700;margin:auto;">
+                                {{ est.apellidos|first|upper }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="font-weight:500;">{{ est.nombre_completo }}</span>
+                            {% if est.requiere_atencion_especial %}
+                            <span class="ms-1" title="Requiere atención especial">
+                                <i class="bi bi-heart-pulse" style="color:#7a5800;font-size:.8rem;"></i>
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:.85rem;color:var(--gris-medio);">
+                            {{ est.cedula|default:"—" }}
+                        </td>
+                        <td style="font-size:.85rem;">{{ est.edad|default:"—" }}</td>
+                        <td style="font-size:.83rem;">{{ est.get_genero_display }}</td>
+                        <td style="font-size:.83rem;">{{ est.ciudad|default:"—" }}</td>
+                        <td style="font-size:.83rem;">
+                            {% if est.representante %}
+                            {{ est.representante.nombre_completo }}
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'estudiantes:detalle' est.pk %}"
+                                   class="btn btn-sm btn-outline-primary" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'estudiantes:editar' est.pk %}"
+                                   class="btn btn-sm btn-outline-secondary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-people d-block mb-2" style="font-size:2rem;"></i>
+                            No se encontraron estudiantes
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white border-top py-2 d-flex justify-content-center">
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}&q={{ request.GET.q }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

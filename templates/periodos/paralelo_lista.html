@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Paralelos{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-diagram-3 me-2" style="color:var(--acento);"></i>Paralelos</h1>
+            <nav aria-label="breadcrumb"><ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'usuarios:dashboard-admin' %}">Inicio</a></li>
+                <li class="breadcrumb-item active">Paralelos</li>
+            </ol></nav>
+        </div>
+        {% if user.es_admin %}
+        <a href="{% url 'periodos:paralelo-crear' %}" class="btn btn-institucional btn-sm">
+            <i class="bi bi-plus me-1"></i>Nuevo paralelo
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{# Filtro período #}
+<div class="card mb-3">
+    <div class="card-body py-2 px-3">
+        <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+            <div>
+                <label class="form-label">Período académico</label>
+                <select name="periodo" class="form-select form-select-sm" onchange="this.form.submit()" style="min-width:220px;">
+                    <option value="">Todos los períodos</option>
+                    {% for p in periodos %}
+                    <option value="{{ p.pk }}" {% if periodo_sel == p.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ p.nombre }} {% if p.es_activo %}(activo){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table tabla-institucional mb-0">
+                <thead>
+                    <tr>
+                        <th>Período</th>
+                        <th>Nivel</th>
+                        <th>Paralelo</th>
+                        <th>Jornada</th>
+                        <th>Cupo máx.</th>
+                        <th>Matriculados</th>
+                        <th>Disponible</th>
+                        <th>Ocupación</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in paralelos %}
+                    <tr>
+                        <td style="font-size:.82rem;color:var(--gris-medio);">{{ p.periodo.nombre }}</td>
+                        <td style="font-weight:500;">{{ p.nivel.nombre }}</td>
+                        <td>
+                            <span style="font-size:.9rem;font-weight:700;color:var(--azul-marino);">{{ p.nombre }}</span>
+                        </td>
+                        <td style="font-size:.83rem;">{{ p.get_jornada_display }}</td>
+                        <td style="text-align:center;">{{ p.cupo_maximo }}</td>
+                        <td style="text-align:center;font-weight:600;">{{ p.matriculados_aprobados }}</td>
+                        <td style="text-align:center;">
+                            <span style="font-weight:600;color:{% if p.cupo_disponible == 0 %}#842029{% elif p.cupo_disponible <= 5 %}#7a5800{% else %}#0a3622{% endif %};">
+                                {{ p.cupo_disponible }}
+                            </span>
+                        </td>
+                        <td style="min-width:90px;">
+                            <div style="background:#e9ecef;border-radius:3px;height:7px;overflow:hidden;">
+                                <div style="height:100%;border-radius:3px;width:{{ p.porcentaje_ocupacion }}%;
+                                    background:{% if p.porcentaje_ocupacion >= 95 %}#dc3545{% elif p.porcentaje_ocupacion >= 70 %}#c8a84b{% else %}#198754{% endif %};">
+                                </div>
+                            </div>
+                            <div style="font-size:.7rem;color:var(--gris-medio);text-align:right;margin-top:.1rem;">{{ p.porcentaje_ocupacion }}%</div>
+                        </td>
+                        <td>
+                            {% if user.es_admin %}
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'periodos:paralelo-editar' p.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'periodos:paralelo-eliminar' p.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-diagram-3 d-block mb-2" style="font-size:2rem;"></i>
+                            No hay paralelos registrados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

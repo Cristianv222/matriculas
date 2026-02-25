@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ SCHOOL_NAME }} — Sistema de Matrículas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    {% load static %}
+    <style>
+        :root {
+            --azul-marino:  #1a2e4a;
+            --azul-medio:   #24487a;
+            --azul-claro:   #2e5fa3;
+            --acento:       #c8a84b;
+            --acento-hover: #b5943a;
+            --gris-claro:   #f4f5f7;
+            --gris-borde:   #dee2e6;
+            --blanco:       #ffffff;
+            --fuente-display: 'Lora', Georgia, serif;
+            --fuente-body:    'Source Sans 3', 'Segoe UI', sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: var(--fuente-body);
+            font-size: 15px;
+            color: #343a40;
+            background: var(--blanco);
+            margin: 0;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--fuente-display);
+            font-weight: 600;
+            letter-spacing: -.01em;
+        }
+
+        /* ── Navbar ── */
+        .lp-nav {
+            background: var(--azul-marino);
+            padding: .85rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.25);
+        }
+
+        .lp-brand {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            text-decoration: none;
+        }
+
+        .lp-brand-icon {
+            width: 38px; height: 38px;
+            background: var(--acento);
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .lp-brand-text {
+            font-family: var(--fuente-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            line-height: 1.15;
+        }
+
+        .lp-brand-sub {
+            font-family: var(--fuente-body);
+            font-size: .7rem;
+            color: rgba(255,255,255,.55);
+            font-weight: 400;
+            display: block;
+        }
+
+        .btn-nav-login {
+            background: var(--acento);
+            border: none;
+            color: white;
+            font-family: var(--fuente-body);
+            font-size: .875rem;
+            font-weight: 600;
+            padding: .5rem 1.4rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background .15s;
+            white-space: nowrap;
+        }
+        .btn-nav-login:hover {
+            background: var(--acento-hover);
+            color: white;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            background: var(--azul-marino);
+            color: white;
+            padding: 5rem 2rem 4rem;
+            text-align: center;
+            border-bottom: 4px solid var(--acento);
+        }
+
+        .hero-eyebrow {
+            font-size: .75rem;
+            font-weight: 600;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            color: var(--acento);
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            color: white;
+            margin-bottom: .75rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.05rem;
+            color: rgba(255,255,255,.72);
+            max-width: 560px;
+            margin: 0 auto 2rem;
+            font-weight: 300;
+            line-height: 1.65;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: .75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero-primary {
+            background: var(--acento);
+            border: 2px solid var(--acento);
+            color: white;
+            font-weight: 600;
+            font-size: .95rem;
+            padding: .7rem 2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background .15s, border-color .15s;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .btn-hero-primary:hover {
+            background: var(--acento-hover);
+            border-color: var(--acento-hover);
+            color: white;
+        }
+
+        .btn-hero-secondary {
+            background: transparent;
+            border: 2px solid rgba(255,255,255,.35);
+            color: rgba(255,255,255,.85);
+            font-weight: 500;
+            font-size: .95rem;
+            padding: .7rem 2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: border-color .15s, color .15s;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .btn-hero-secondary:hover {
+            border-color: rgba(255,255,255,.7);
+            color: white;
+        }
+
+        /* ── Franja de datos institucionales ── */
+        .franja-datos {
+            background: var(--acento);
+            padding: .75rem 2rem;
+        }
+
+        .franja-datos .dato {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            color: white;
+            font-size: .82rem;
+            font-weight: 500;
+        }
+
+        /* ── Sección: ¿Cómo funciona? ── */
+        .seccion {
+            padding: 4rem 2rem;
+        }
+
+        .seccion-titulo {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .seccion-titulo h2 {
+            font-size: 1.6rem;
+            color: var(--azul-marino);
+            margin-bottom: .4rem;
+        }
+
+        .seccion-titulo p {
+            color: #6c757d;
+            font-size: .925rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .paso-card {
+            text-align: center;
+            padding: 1.5rem 1rem;
+        }
+
+        .paso-numero {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: var(--azul-marino);
+            color: white;
+            font-family: var(--fuente-display);
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .paso-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--azul-marino);
+            margin-bottom: .4rem;
+        }
+
+        .paso-card p {
+            font-size: .875rem;
+            color: #6c757d;
+            line-height: 1.55;
+            margin: 0;
+        }
+
+        /* ── Sección: Paneles diferenciados ── */
+        .paneles {
+            background: var(--gris-claro);
+            padding: 4rem 2rem;
+            border-top: 1px solid var(--gris-borde);
+            border-bottom: 1px solid var(--gris-borde);
+        }
+
+        .panel-card {
+            background: white;
+            border: 1px solid var(--gris-borde);
+            border-radius: 6px;
+            padding: 2rem 1.75rem;
+            height: 100%;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+        }
+
+        .panel-card .panel-icono {
+            width: 56px; height: 56px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .panel-card h3 {
+            font-size: 1.1rem;
+            color: var(--azul-marino);
+            margin-bottom: .5rem;
+        }
+
+        .panel-card p {
+            font-size: .875rem;
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+
+        .panel-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem;
+        }
+
+        .panel-card ul li {
+            font-size: .85rem;
+            color: #495057;
+            padding: .3rem 0;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .panel-card ul li i {
+            color: var(--acento);
+            font-size: .85rem;
+            flex-shrink: 0;
+        }
+
+        .btn-panel {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .55rem 1.4rem;
+            border-radius: 4px;
+            font-size: .875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background .15s, color .15s;
+        }
+
+        .btn-panel-admin {
+            background: var(--azul-marino);
+            color: white;
+            border: 2px solid var(--azul-marino);
+        }
+        .btn-panel-admin:hover {
+            background: var(--azul-medio);
+            border-color: var(--azul-medio);
+            color: white;
+        }
+
+        .btn-panel-rep {
+            background: transparent;
+            color: var(--azul-claro);
+            border: 2px solid var(--azul-claro);
+        }
+        .btn-panel-rep:hover {
+            background: var(--azul-claro);
+            color: white;
+        }
+
+        /* ── Requisitos ── */
+        .req-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            padding: .75rem 0;
+            border-bottom: 1px solid var(--gris-borde);
+        }
+        .req-item:last-child { border-bottom: none; }
+
+        .req-item .req-icon {
+            width: 32px; height: 32px;
+            border-radius: 4px;
+            background: #e8eff8;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--azul-claro);
+            flex-shrink: 0;
+            font-size: .9rem;
+        }
+
+        .req-item h4 {
+            font-size: .875rem;
+            font-weight: 600;
+            color: var(--azul-marino);
+            margin-bottom: .1rem;
+        }
+
+        .req-item p {
+            font-size: .8rem;
+            color: #6c757d;
+            margin: 0;
+        }
+
+        /* ── CTA final ── */
+        .cta-final {
+            background: var(--azul-marino);
+            padding: 3.5rem 2rem;
+            text-align: center;
+            color: white;
+            border-top: 4px solid var(--acento);
+        }
+
+        .cta-final h2 {
+            font-size: 1.6rem;
+            color: white;
+            margin-bottom: .6rem;
+        }
+
+        .cta-final p {
+            color: rgba(255,255,255,.65);
+            font-size: .925rem;
+            margin-bottom: 1.75rem;
+        }
+
+        /* ── Footer ── */
+        .lp-footer {
+            background: #111e30;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+
+        .lp-footer small {
+            color: rgba(255,255,255,.35);
+            font-size: .78rem;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 575px) {
+            .hero { padding: 3.5rem 1.25rem 3rem; }
+            .seccion { padding: 3rem 1.25rem; }
+            .paneles { padding: 3rem 1.25rem; }
+            .lp-nav { padding: .75rem 1.25rem; }
+            .lp-brand-text { font-size: .9rem; }
+        }
+    </style>
+</head>
+<body>
+
+{# ── Navbar ── #}
+<nav class="lp-nav">
+    <a class="lp-brand" href="#">
+        <div class="lp-brand-icon">
+            <i class="bi bi-mortarboard-fill"></i>
+        </div>
+        <div>
+            <span class="lp-brand-text">{{ SCHOOL_NAME }}</span>
+            <span class="lp-brand-sub">{{ SCHOOL_CITY }}, {{ SCHOOL_PROVINCE }}</span>
+        </div>
+    </a>
+    <a href="{% url 'usuarios:login' %}" class="btn-nav-login">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar sesión
+    </a>
+</nav>
+
+{# ── Franja institucional ── #}
+<div class="franja-datos">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-4 justify-content-center">
+            <div class="dato"><i class="bi bi-building"></i>AMIE: {{ SCHOOL_AMIE }}</div>
+            <div class="dato"><i class="bi bi-geo-alt"></i>{{ SCHOOL_CITY }}, {{ SCHOOL_PROVINCE }}</div>
+            <div class="dato"><i class="bi bi-calendar-check"></i>Matrículas en línea disponibles</div>
+        </div>
+    </div>
+</div>
+
+{# ── Hero ── #}
+<section class="hero">
+    <div class="container">
+        <p class="hero-eyebrow">Sistema de Gestión de Matrículas</p>
+        <h1>Proceso de matrícula<br>simple y transparente</h1>
+        <p>
+            Registre a sus representados, solicite su matrícula y realice seguimiento
+            del proceso de forma completamente en línea, desde cualquier dispositivo.
+        </p>
+        <div class="hero-actions">
+            <a href="{% url 'usuarios:registro' %}" class="btn-hero-primary">
+                <i class="bi bi-person-plus-fill"></i>
+                Registrarse como representante
+            </a>
+            <a href="{% url 'usuarios:login' %}" class="btn-hero-secondary">
+                <i class="bi bi-box-arrow-in-right"></i>
+                Ya tengo cuenta
+            </a>
+        </div>
+    </div>
+</section>
+
+{# ── Pasos ── #}
+<section class="seccion">
+    <div class="container">
+        <div class="seccion-titulo">
+            <h2>¿Cómo funciona el proceso?</h2>
+            <p>Cuatro pasos sencillos para completar su solicitud de matrícula en línea</p>
+        </div>
+        <div class="row g-3 justify-content-center">
+            <div class="col-6 col-md-3">
+                <div class="paso-card">
+                    <div class="paso-numero">1</div>
+                    <h3>Cree su cuenta</h3>
+                    <p>Regístrese como representante legal con sus datos personales y correo electrónico.</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="paso-card">
+                    <div class="paso-numero">2</div>
+                    <h3>Registre al estudiante</h3>
+                    <p>Complete la ficha del estudiante con datos personales, médicos y familiares.</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="paso-card">
+                    <div class="paso-numero">3</div>
+                    <h3>Envíe su solicitud</h3>
+                    <p>Seleccione el paralelo disponible y adjunte los documentos requeridos.</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="paso-card">
+                    <div class="paso-numero">4</div>
+                    <h3>Espere la resolución</h3>
+                    <p>La secretaría revisará su solicitud y recibirá la notificación de aprobación.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Paneles diferenciados ── #}
+<section class="paneles">
+    <div class="container">
+        <div class="seccion-titulo">
+            <h2>Acceso según su rol</h2>
+            <p>El sistema cuenta con paneles diferenciados para representantes y personal administrativo</p>
+        </div>
+        <div class="row g-4">
+
+            {# Panel Representante #}
+            <div class="col-md-6">
+                <div class="panel-card">
+                    <div class="panel-icono" style="background:#e8eff8;">
+                        <i class="bi bi-person-lines-fill" style="color:var(--azul-claro);"></i>
+                    </div>
+                    <h3>Portal del Representante Legal</h3>
+                    <p>Para padres, madres y tutores que deseen gestionar el proceso de matrícula de sus hijos o representados.</p>
+                    <ul>
+                        <li><i class="bi bi-check2"></i>Registro y ficha completa del estudiante</li>
+                        <li><i class="bi bi-check2"></i>Solicitar nueva matrícula o renovación</li>
+                        <li><i class="bi bi-check2"></i>Seguimiento en tiempo real del estado</li>
+                        <li><i class="bi bi-check2"></i>Recibir notificaciones de aprobación o rechazo</li>
+                        <li><i class="bi bi-check2"></i>Corregir y reenviar solicitudes rechazadas</li>
+                    </ul>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{% url 'usuarios:registro' %}" class="btn-panel btn-panel-rep">
+                            <i class="bi bi-person-plus"></i>Crear cuenta
+                        </a>
+                        <a href="{% url 'usuarios:login' %}" class="btn-panel btn-panel-admin" style="background:transparent;color:var(--azul-marino);border-color:var(--azul-marino);">
+                            <i class="bi bi-box-arrow-in-right"></i>Ingresar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {# Panel Administrativo #}
+            <div class="col-md-6">
+                <div class="panel-card">
+                    <div class="panel-icono" style="background:#f0f4f9;">
+                        <i class="bi bi-shield-check" style="color:var(--azul-marino);"></i>
+                    </div>
+                    <h3>Panel Administrativo</h3>
+                    <p>Para secretaría y administración institucional. Gestione todo el flujo de matrículas desde un panel centralizado.</p>
+                    <ul>
+                        <li><i class="bi bi-check2"></i>Revisión y aprobación de solicitudes</li>
+                        <li><i class="bi bi-check2"></i>Gestión de períodos académicos y paralelos</li>
+                        <li><i class="bi bi-check2"></i>Control de cupos por paralelo en tiempo real</li>
+                        <li><i class="bi bi-check2"></i>Reportes y estadísticas de matrículas</li>
+                        <li><i class="bi bi-check2"></i>Administración de usuarios del sistema</li>
+                    </ul>
+                    <a href="{% url 'usuarios:login' %}" class="btn-panel btn-panel-admin">
+                        <i class="bi bi-box-arrow-in-right"></i>Acceso administrativo
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{# ── Documentos requeridos ── #}
+<section class="seccion">
+    <div class="container">
+        <div class="row g-4 align-items-start">
+            <div class="col-md-6">
+                <div class="seccion-titulo text-start mb-3">
+                    <h2>Documentos requeridos</h2>
+                    <p>Para completar el proceso de matrícula deberá tener disponibles los siguientes documentos.</p>
+                </div>
+                <div>
+                    <div class="req-item">
+                        <div class="req-icon"><i class="bi bi-card-text"></i></div>
+                        <div>
+                            <h4>Cédula del estudiante</h4>
+                            <p>Copia de la cédula de ciudadanía o pasaporte vigente</p>
+                        </div>
+                    </div>
+                    <div class="req-item">
+                        <div class="req-icon"><i class="bi bi-award"></i></div>
+                        <div>
+                            <h4>Certificado de estudios</h4>
+                            <p>Del año o grado inmediatamente anterior aprobado</p>
+                        </div>
+                    </div>
+                    <div class="req-item">
+                        <div class="req-icon"><i class="bi bi-person-badge"></i></div>
+                        <div>
+                            <h4>Cédula del representante</h4>
+                            <p>Copia de cédula del padre, madre o representante legal</p>
+                        </div>
+                    </div>
+                    <div class="req-item">
+                        <div class="req-icon"><i class="bi bi-camera"></i></div>
+                        <div>
+                            <h4>Foto carnet</h4>
+                            <p>Foto reciente con fondo blanco, tamaño carnet</p>
+                        </div>
+                    </div>
+                    <div class="req-item">
+                        <div class="req-icon"><i class="bi bi-heart-pulse"></i></div>
+                        <div>
+                            <h4>Carnet de vacunación</h4>
+                            <p>Para estudiantes de primeros grados (Preparatoria y EGB)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel-card" style="background:var(--gris-claro);">
+                    <div class="panel-icono" style="background:#fff3cd;">
+                        <i class="bi bi-calendar3" style="color:#7a5800;"></i>
+                    </div>
+                    <h3>Período de matrículas</h3>
+                    {% if SCHOOL_NAME %}
+                    <p>Consulte con la secretaría de <strong>{{ SCHOOL_NAME }}</strong> las fechas vigentes del período de matrículas.</p>
+                    {% endif %}
+                    <p style="font-size:.85rem; color:#6c757d; margin-bottom:0;">
+                        Las matrículas ordinarias se realizan durante el período establecido por el MINEDUC.
+                        Las matrículas extraordinarias requieren autorización de la autoridad institucional.
+                    </p>
+                    <hr style="margin:1rem 0; border-color:var(--gris-borde);">
+                    <p style="font-size:.82rem; color:#6c757d; margin:0;">
+                        <i class="bi bi-info-circle me-1" style="color:var(--azul-claro);"></i>
+                        Para consultas comuníquese directamente con la secretaría de la institución.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── CTA final ── #}
+<section class="cta-final">
+    <div class="container">
+        <h2>¿Listo para iniciar el proceso?</h2>
+        <p>Cree su cuenta de representante y comience la solicitud de matrícula en línea</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{% url 'usuarios:registro' %}" class="btn-hero-primary">
+                <i class="bi bi-person-plus-fill"></i>
+                Crear cuenta de representante
+            </a>
+            <a href="{% url 'usuarios:login' %}" class="btn-hero-secondary">
+                <i class="bi bi-box-arrow-in-right"></i>
+                Ya tengo cuenta — Ingresar
+            </a>
+        </div>
+    </div>
+</section>
+
+{# ── Footer ── #}
+<footer class="lp-footer">
+    <small>
+        {{ SCHOOL_NAME }} &nbsp;·&nbsp; {{ SCHOOL_CITY }}, {{ SCHOOL_PROVINCE }}
+        &nbsp;·&nbsp; AMIE: {{ SCHOOL_AMIE }}
+        &nbsp;·&nbsp; &copy; {% now "Y" %}
+    </small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

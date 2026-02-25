@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}{{ usuario_obj.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-person-badge me-2" style="color:var(--acento);"></i>{{ usuario_obj.nombre_completo }}</h1>
+            <nav aria-label="breadcrumb"><ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'usuarios:lista' %}">Usuarios</a></li>
+                <li class="breadcrumb-item active">Detalle</li>
+            </ol></nav>
+        </div>
+        {% if user.es_admin %}
+        <a href="{% url 'usuarios:editar' usuario_obj.pk %}" class="btn btn-sm btn-institucional">
+            <i class="bi bi-pencil me-1"></i>Editar
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    {# Tarjeta de perfil #}
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body text-center py-4">
+                <div style="width:80px;height:80px;border-radius:50%;margin:0 auto 1rem;overflow:hidden;
+                    background:{% if usuario_obj.rol == 'ADMIN' %}#dc3545{% elif usuario_obj.rol == 'SECRETARIA' %}#0d6efd{% elif usuario_obj.rol == 'DOCENTE' %}#6f42c1{% else %}#198754{% endif %};
+                    display:flex;align-items:center;justify-content:center;">
+                    {% if usuario_obj.foto %}
+                    <img src="{{ usuario_obj.foto.url }}" style="width:100%;height:100%;object-fit:cover;">
+                    {% else %}
+                    <span style="font-family:'Lora',serif;font-size:1.8rem;font-weight:700;color:white;">
+                        {{ usuario_obj.last_name|first|upper }}{{ usuario_obj.first_name|first|upper }}
+                    </span>
+                    {% endif %}
+                </div>
+                <h2 style="font-size:1.1rem;color:var(--azul-marino);margin-bottom:.25rem;">
+                    {{ usuario_obj.nombre_completo }}
+                </h2>
+                <div style="font-size:.82rem;color:var(--gris-medio);margin-bottom:.75rem;">
+                    @{{ usuario_obj.username }}
+                </div>
+                <span style="font-size:.75rem;font-weight:600;padding:.25rem .75rem;border-radius:3px;
+                    background:{% if usuario_obj.rol == 'ADMIN' %}#f8d7da{% elif usuario_obj.rol == 'SECRETARIA' %}#cff4fc{% elif usuario_obj.rol == 'DOCENTE' %}#e2d9f3{% else %}#d1e7dd{% endif %};
+                    color:{% if usuario_obj.rol == 'ADMIN' %}#58151c{% elif usuario_obj.rol == 'SECRETARIA' %}#055160{% elif usuario_obj.rol == 'DOCENTE' %}#3d1a78{% else %}#0a3622{% endif %};">
+                    {{ usuario_obj.get_rol_display }}
+                </span>
+                <div class="mt-3 d-flex justify-content-center gap-3">
+                    <div class="text-center">
+                        <div style="font-size:.7rem;color:var(--gris-medio);text-transform:uppercase;letter-spacing:.05em;">Estado</div>
+                        <div style="font-size:.82rem;font-weight:600;color:{% if usuario_obj.is_active %}#0a3622{% else %}#41464b{% endif %};">
+                            {% if usuario_obj.is_active %}Activo{% else %}Inactivo{% endif %}
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div style="font-size:.7rem;color:var(--gris-medio);text-transform:uppercase;letter-spacing:.05em;">Email</div>
+                        <div style="font-size:.82rem;font-weight:600;color:{% if usuario_obj.is_verified %}#0a3622{% else %}#7a5800{% endif %};">
+                            {% if usuario_obj.is_verified %}Verificado{% else %}Pendiente{% endif %}
+                        </div>
+                    </div>
+                    {% if usuario_obj.es_representante %}
+                    <div class="text-center">
+                        <div style="font-size:.7rem;color:var(--gris-medio);text-transform:uppercase;letter-spacing:.05em;">Hijos</div>
+                        <div style="font-size:.82rem;font-weight:600;color:var(--azul-marino);">{{ estudiantes|length|default:"0" }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div style="border-top:1px solid var(--gris-borde);padding:.85rem 1.25rem;">
+                {% if usuario_obj.email %}
+                <div style="font-size:.83rem;margin-bottom:.5rem;">
+                    <i class="bi bi-envelope me-2" style="color:var(--gris-medio);"></i>{{ usuario_obj.email }}
+                </div>
+                {% endif %}
+                {% if usuario_obj.cedula %}
+                <div style="font-size:.83rem;margin-bottom:.5rem;">
+                    <i class="bi bi-card-text me-2" style="color:var(--gris-medio);"></i>{{ usuario_obj.cedula }}
+                </div>
+                {% endif %}
+                {% if usuario_obj.telefono %}
+                <div style="font-size:.83rem;margin-bottom:.5rem;">
+                    <i class="bi bi-telephone me-2" style="color:var(--gris-medio);"></i>{{ usuario_obj.telefono }}
+                    {% if usuario_obj.telefono_alt %} / {{ usuario_obj.telefono_alt }}{% endif %}
+                </div>
+                {% endif %}
+                {% if usuario_obj.ciudad %}
+                <div style="font-size:.83rem;">
+                    <i class="bi bi-geo-alt me-2" style="color:var(--gris-medio);"></i>{{ usuario_obj.ciudad }}
+                    {% if usuario_obj.sector %}, {{ usuario_obj.sector }}{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div style="border-top:1px solid var(--gris-borde);padding:.65rem 1.25rem;">
+                <div style="font-size:.75rem;color:var(--gris-medio);">
+                    Registrado: {{ usuario_obj.date_joined|date:"d/m/Y" }}
+                    &nbsp;·&nbsp;
+                    Último acceso: {{ usuario_obj.last_login|date:"d/m/Y"|default:"Nunca" }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Columna derecha #}
+    <div class="col-lg-8">
+
+        {# Estudiantes del representante #}
+        {% if usuario_obj.es_representante and estudiantes %}
+        <div class="card mb-3">
+            <div class="card-header"><i class="bi bi-people me-2"></i>Estudiantes registrados</div>
+            <div class="card-body p-0">
+                <table class="table tabla-institucional mb-0">
+                    <thead><tr>
+                        <th>Nombre</th><th>Cédula</th><th>Edad</th><th></th>
+                    </tr></thead>
+                    <tbody>
+                        {% for est in estudiantes %}
+                        <tr>
+                            <td style="font-weight:500;">{{ est.nombre_completo }}</td>
+                            <td style="font-size:.83rem;color:var(--gris-medio);">{{ est.cedula|default:"—" }}</td>
+                            <td style="font-size:.83rem;">{{ est.edad|default:"—" }}</td>
+                            <td>
+                                <a href="{% url 'estudiantes:detalle' est.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Sesiones recientes #}
+        <div class="card">
+            <div class="card-header"><i class="bi bi-clock-history me-2"></i>Últimas sesiones</div>
+            <div class="card-body p-0">
+                <table class="table tabla-institucional mb-0">
+                    <thead><tr>
+                        <th>IP</th><th>Navegador</th><th>Entrada</th><th>Salida</th><th>Estado</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for s in sesiones %}
+                        <tr>
+                            <td style="font-size:.82rem;font-family:monospace;">{{ s.ip }}</td>
+                            <td style="font-size:.78rem;color:var(--gris-medio);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ s.user_agent|truncatechars:50 }}
+                            </td>
+                            <td style="font-size:.8rem;">{{ s.fecha_login|date:"d/m/Y H:i" }}</td>
+                            <td style="font-size:.8rem;color:var(--gris-medio);">{{ s.fecha_logout|date:"H:i"|default:"—" }}</td>
+                            <td>
+                                {% if s.exitosa %}
+                                <span style="font-size:.72rem;background:#d1e7dd;color:#0a3622;padding:.15rem .5rem;border-radius:3px;font-weight:600;">OK</span>
+                                {% else %}
+                                <span style="font-size:.72rem;background:#f8d7da;color:#842029;padding:.15rem .5rem;border-radius:3px;font-weight:600;">Fallida</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-3 text-muted" style="font-size:.875rem;">Sin sesiones registradas</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

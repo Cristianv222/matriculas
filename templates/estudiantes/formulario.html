@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo|default:"Formulario" }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-person-vcard me-2" style="color:var(--acento);"></i>{{ titulo|default:"Estudiante" }}</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'estudiantes:lista' %}">Estudiantes</a></li>
+                    <li class="breadcrumb-item active">{{ titulo }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" action="{% if form.instance.pk %}{% url 'estudiantes:editar' form.instance.pk %}{% else %}{% url 'estudiantes:crear' %}{% endif %}" novalidate id="formEstudiante">
+    {% csrf_token %}
+
+    {# ── Navegación de secciones ── #}
+    <div class="d-flex gap-1 mb-3 flex-wrap" id="seccionNav">
+        <button type="button" class="btn btn-sm btn-institucional seccion-btn active" data-target="seccion-identidad">
+            <i class="bi bi-person me-1"></i>Identidad
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary seccion-btn" data-target="seccion-direccion">
+            <i class="bi bi-geo-alt me-1"></i>Dirección
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary seccion-btn" data-target="seccion-medica">
+            <i class="bi bi-heart-pulse me-1"></i>Médica
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary seccion-btn" data-target="seccion-familia">
+            <i class="bi bi-people me-1"></i>Familia
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary seccion-btn" data-target="seccion-academica">
+            <i class="bi bi-mortarboard me-1"></i>Procedencia
+        </button>
+    </div>
+
+    {# ── 1. Identidad ── #}
+    <div class="card mb-3 seccion-panel" id="seccion-identidad">
+        <div class="card-header">
+            <i class="bi bi-person me-2"></i>Datos de Identidad
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                    {{ form.nombres }}
+                    {% if form.nombres.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.nombres.errors|first }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                    {{ form.apellidos }}
+                    {% if form.apellidos.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.apellidos.errors|first }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Cédula / Pasaporte</label>
+                    {{ form.cedula }}
+                    {% if form.cedula.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.cedula.errors|first }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Fecha de nacimiento <span class="text-danger">*</span></label>
+                    {{ form.fecha_nacimiento }}
+                    {% if form.fecha_nacimiento.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.fecha_nacimiento.errors|first }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Género <span class="text-danger">*</span></label>
+                    {{ form.genero }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nacionalidad</label>
+                    {{ form.nacionalidad }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Auto-identificación étnica</label>
+                    {{ form.etnia }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Lugar de nacimiento</label>
+                    {{ form.lugar_nacimiento }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Representante legal</label>
+                    {{ form.representante }}
+                    <div class="col-md-6 mt-2">
+                        <label class="form-label">Relación</label>
+                        {{ form.relacion_representante }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Foto carnet</label>
+                    {{ form.foto }}
+                    {% if form.instance.foto %}
+                    <div class="mt-2">
+                        <img src="{{ form.instance.foto.url }}"
+                             style="height:80px;border-radius:4px;border:1px solid var(--gris-borde);">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── 2. Dirección ── #}
+    <div class="card mb-3 seccion-panel d-none" id="seccion-direccion">
+        <div class="card-header"><i class="bi bi-geo-alt me-2"></i>Dirección y Emergencia</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Dirección domiciliaria</label>
+                    {{ form.direccion }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Ciudad</label>
+                    {{ form.ciudad }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Sector / Barrio</label>
+                    {{ form.sector }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contacto de emergencia</label>
+                    {{ form.contacto_emergencia }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Teléfono de emergencia</label>
+                    {{ form.telefono_emergencia }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── 3. Médica ── #}
+    <div class="card mb-3 seccion-panel d-none" id="seccion-medica">
+        <div class="card-header"><i class="bi bi-heart-pulse me-2"></i>Información Médica</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Tipo de sangre</label>
+                    {{ form.tipo_sangre }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Médico tratante</label>
+                    {{ form.medico_tratante }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Seguro médico / IESS</label>
+                    {{ form.seguro_medico }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Alergias conocidas</label>
+                    {{ form.alergias }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Enfermedades crónicas</label>
+                    {{ form.enfermedades_cronicas }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Medicación actual</label>
+                    {{ form.medicacion_actual }}
+                </div>
+                <div class="col-12 mt-2">
+                    <div class="form-check">
+                        {{ form.tiene_discapacidad }}
+                        <label class="form-check-label" for="id_tiene_discapacidad">
+                            <strong>Tiene discapacidad</strong>
+                        </label>
+                    </div>
+                </div>
+                <div id="bloque-discapacidad" {% if not form.instance.tiene_discapacidad %}style="display:none;"{% endif %}>
+                    <div class="row g-3 mt-0">
+                        <div class="col-md-5">
+                            <label class="form-label">Tipo de discapacidad</label>
+                            {{ form.tipo_discapacidad }}
+                            {% if form.tipo_discapacidad.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.tipo_discapacidad.errors|first }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Porcentaje (%)</label>
+                            {{ form.porcentaje_discapacidad }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nº Carnet CONADIS</label>
+                            {{ form.numero_conadis }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Necesidades educativas especiales</label>
+                            {{ form.necesidades_especiales }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── 4. Familia ── #}
+    <div class="card mb-3 seccion-panel d-none" id="seccion-familia">
+        <div class="card-header"><i class="bi bi-people me-2"></i>Datos Familiares</div>
+        <div class="card-body">
+            <div class="form-section-title mt-1"><i class="bi bi-person me-2"></i>Padre</div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6"><label class="form-label">Nombres</label>{{ form.padre_nombres }}</div>
+                <div class="col-md-3"><label class="form-label">Cédula</label>{{ form.padre_cedula }}</div>
+                <div class="col-md-3"><label class="form-label">Teléfono</label>{{ form.padre_telefono }}</div>
+                <div class="col-md-6"><label class="form-label">Correo</label>{{ form.padre_email }}</div>
+                <div class="col-md-3"><label class="form-label">Ocupación</label>{{ form.padre_ocupacion }}</div>
+                <div class="col-md-3"><label class="form-label">Estado civil</label>{{ form.padre_estado_civil }}</div>
+                <div class="col-md-3"><label class="form-label">Instrucción</label>{{ form.padre_instruccion }}</div>
+            </div>
+            <div class="form-section-title"><i class="bi bi-person me-2"></i>Madre</div>
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Nombres</label>{{ form.madre_nombres }}</div>
+                <div class="col-md-3"><label class="form-label">Cédula</label>{{ form.madre_cedula }}</div>
+                <div class="col-md-3"><label class="form-label">Teléfono</label>{{ form.madre_telefono }}</div>
+                <div class="col-md-6"><label class="form-label">Correo</label>{{ form.madre_email }}</div>
+                <div class="col-md-3"><label class="form-label">Ocupación</label>{{ form.madre_ocupacion }}</div>
+                <div class="col-md-3"><label class="form-label">Estado civil</label>{{ form.madre_estado_civil }}</div>
+                <div class="col-md-3"><label class="form-label">Instrucción</label>{{ form.madre_instruccion }}</div>
+            </div>
+        </div>
+    </div>
+
+    {# ── 5. Procedencia académica ── #}
+    <div class="card mb-3 seccion-panel d-none" id="seccion-academica">
+        <div class="card-header"><i class="bi bi-mortarboard me-2"></i>Procedencia Académica</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-8"><label class="form-label">Institución anterior</label>{{ form.institucion_anterior }}</div>
+                <div class="col-md-4"><label class="form-label">Código AMIE</label>{{ form.amie_anterior }}</div>
+                <div class="col-md-4"><label class="form-label">Último grado aprobado</label>{{ form.grado_anterior }}</div>
+                <div class="col-md-4"><label class="form-label">Año lectivo</label>{{ form.anio_anterior }}</div>
+                <div class="col-md-4"><label class="form-label">Promedio final</label>{{ form.promedio_anterior }}</div>
+                <div class="col-12"><label class="form-label">Motivo de cambio</label>{{ form.motivo_cambio }}</div>
+                <div class="col-12"><label class="form-label">Observaciones generales</label>{{ form.observaciones_generales }}</div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Botones ── #}
+    <div class="d-flex gap-2 justify-content-end">
+        <a href="{% url 'estudiantes:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x me-1"></i>Cancelar
+        </a>
+        <button type="submit" class="btn btn-institucional">
+            <i class="bi bi-check2 me-1"></i>{{ accion|default:"Guardar" }}
+        </button>
+    </div>
+
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Navegación entre secciones
+document.querySelectorAll('.seccion-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const target = btn.dataset.target;
+        document.querySelectorAll('.seccion-panel').forEach(p => p.classList.add('d-none'));
+        document.getElementById(target).classList.remove('d-none');
+        document.querySelectorAll('.seccion-btn').forEach(b => {
+            b.classList.remove('btn-institucional');
+            b.classList.add('btn-outline-secondary');
+        });
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-institucional');
+    });
+});
+
+// Mostrar/ocultar bloque discapacidad
+const chkDiscapacidad = document.getElementById('id_tiene_discapacidad');
+const bloqueDisc      = document.getElementById('bloque-discapacidad');
+if (chkDiscapacidad) {
+    chkDiscapacidad.addEventListener('change', () => {
+        bloqueDisc.style.display = chkDiscapacidad.checked ? '' : 'none';
+    });
+}
+
+// Si hay errores, mostrar la sección correcta
+const errores = document.querySelectorAll('.text-danger');
+if (errores.length > 0) {
+    const primerCampoError = errores[0].closest('.seccion-panel');
+    if (primerCampoError) {
+        document.querySelectorAll('.seccion-panel').forEach(p => p.classList.add('d-none'));
+        primerCampoError.classList.remove('d-none');
+        const id = primerCampoError.id;
+        document.querySelectorAll('.seccion-btn').forEach(b => {
+            const active = b.dataset.target === id;
+            b.classList.toggle('btn-institucional', active);
+            b.classList.toggle('btn-outline-secondary', !active);
+        });
+    }
+}
+</script>
+{% endblock %}
