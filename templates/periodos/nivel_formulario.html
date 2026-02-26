@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo|default:"Nivel" }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-layers me-2" style="color:var(--acento);"></i>{{ titulo|default:"Nivel" }}</h1>
+            <nav aria-label="breadcrumb"><ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'periodos:nivel-lista' %}">Niveles</a></li>
+                <li class="breadcrumb-item active">{{ titulo }}</li>
+            </ol></nav>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-5">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-layers me-2"></i>Datos del nivel</div>
+            <div class="card-body">
+                <form method="post"
+                      action="{% if form.instance.pk %}{% url 'periodos:nivel-editar' form.instance.pk %}{% else %}{% url 'periodos:nivel-crear' %}{% endif %}"
+                      novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                            <div style="font-size:.78rem;color:#dc3545;">{{ form.nombre.errors|first }}</div>
+                            {% endif %}
+                            <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.2rem;">
+                                Ej: 1ro EGB, 2do EGB, … 10mo EGB, 1ro BGU, 2do BGU, 3ro BGU
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Subnivel educativo</label>
+                            {{ form.subnivel }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Orden</label>
+                            {{ form.orden }}
+                            {% if form.orden.errors %}
+                            <div style="font-size:.78rem;color:#dc3545;">{{ form.orden.errors|first }}</div>
+                            {% endif %}
+                            <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.2rem;">Para ordenar en listas</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descripción</label>
+                            {{ form.descripcion }}
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div style="border-left:4px solid #dc3545;background:#f8d7da;color:#842029;padding:.65rem 1rem;border-radius:4px;font-size:.85rem;margin-top:1rem;">
+                        {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <a href="{% url 'periodos:nivel-lista' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-institucional">
+                            <i class="bi bi-check2 me-1"></i>{{ accion|default:"Guardar" }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# Referencia de subniveles #}
+        <div class="card mt-3">
+            <div class="card-header"><i class="bi bi-info-circle me-2"></i>Referencia del sistema educativo Ecuador</div>
+            <div class="card-body p-0">
+                <table style="width:100%;font-size:.8rem;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:var(--gris-claro);">
+                            <th style="padding:.4rem .85rem;font-weight:600;">Subnivel</th>
+                            <th style="padding:.4rem .85rem;font-weight:600;">Niveles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom:1px solid var(--gris-borde);">
+                            <td style="padding:.4rem .85rem;color:var(--azul-marino);font-weight:500;">Preparatoria</td>
+                            <td style="padding:.4rem .85rem;color:var(--gris-medio);">1ro EGB</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--gris-borde);">
+                            <td style="padding:.4rem .85rem;color:var(--azul-marino);font-weight:500;">Elemental</td>
+                            <td style="padding:.4rem .85rem;color:var(--gris-medio);">2do – 4to EGB</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--gris-borde);">
+                            <td style="padding:.4rem .85rem;color:var(--azul-marino);font-weight:500;">Media</td>
+                            <td style="padding:.4rem .85rem;color:var(--gris-medio);">5to – 7mo EGB</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--gris-borde);">
+                            <td style="padding:.4rem .85rem;color:var(--azul-marino);font-weight:500;">Superior</td>
+                            <td style="padding:.4rem .85rem;color:var(--gris-medio);">8vo – 10mo EGB</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:.4rem .85rem;color:var(--azul-marino);font-weight:500;">BGU / Técnico</td>
+                            <td style="padding:.4rem .85rem;color:var(--gris-medio);">1ro – 3ro BGU</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
