@@ -59,9 +59,11 @@ class PeriodoAcademicoForm(forms.ModelForm):
         if fim and ffm and fim >= ffm:
             errors['fecha_fin_matriculas'] = 'El fin de matrículas debe ser posterior al inicio.'
 
-        if fim and fi and fim < fi:
+        # Nota: el inicio de matrículas SÍ puede ser anterior al inicio de clases
+        # (es lo normal: se matricula antes de que empiece el año lectivo)
+        if fim and ff and fim > ff:
             errors['fecha_inicio_matriculas'] = (
-                'El inicio de matrículas no puede ser anterior al inicio de clases.'
+                'El inicio de matrículas no puede ser posterior al fin del año lectivo.'
             )
 
         if extra:

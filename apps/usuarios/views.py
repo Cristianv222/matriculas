@@ -9,7 +9,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
-from django.shortcuts import redirect
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
@@ -299,6 +300,78 @@ class UsuarioUpdateView(LoginRequiredMixin, AdminRequeridoMixin, UpdateView):
 # ══════════════════════════════════════════════════════════════════════════════
 #  DASHBOARDS
 # ══════════════════════════════════════════════════════════════════════════════
+
+
+
+# =============================================================================
+#  AJAX — ASIGNACIÓN DE ESTUDIANTES A REPRESENTANTE
+# =============================================================================
+
+class BuscarEstudianteView(LoginRequiredMixin, AdminRequeridoMixin, View):
+    """GET /usuarios/usuarios/<pk>/buscar-estudiante/?cedula=..."""
+    def get(self, request, pk):
+        from apps.estudiantes.models import Estudiante
+        cedula = request.GET.get('cedula', '').strip()
+        if not cedula:
+            return JsonResponse({'error': 'Ingrese una cédula.'}, status=400)
+        try:
+            est = Estudiante.objects.select_related('representante').get(cedula=cedula)
+        except Estudiante.DoesNotExist:
+            return JsonResponse({'error': f'No existe estudiante con cédula {cedula}.'}, status=404)
+
+        rep = get_object_or_404(Usuario, pk=pk)
+        if est.representante and est.representante.pk != rep.pk:
+            return JsonResponse({
+                'error': f'Ya asignado a: {est.representante.get_full_name()}.'
+            }, status=409)
+
+        return JsonResponse({
+            'id': est.pk,
+            'nombre': est.nombre_completo,
+            'cedula': est.cedula or '—',
+            'ya_asignado': est.representante_id == rep.pk,
+            'relacion': est.relacion_representante,
+        })
+
+
+class AsignarEstudianteView(LoginRequiredMixin, AdminRequeridoMixin, View):
+    """POST /usuarios/usuarios/<pk>/asignar-estudiante/  body: {estudiante_id: N}"""
+    def post(self, request, pk):
+        import json
+        from apps.estudiantes.models import Estudiante
+        try:
+            data = json.loads(request.body)
+            est_id = int(data.get('estudiante_id', 0))
+        except Exception:
+            return JsonResponse({'error': 'Datos inválidos.'}, status=400)
+
+        rep = get_object_or_404(Usuario, pk=pk)
+        est = get_object_or_404(Estudiante, pk=est_id)
+
+        if est.representante and est.representante.pk != rep.pk:
+            return JsonResponse({'error': 'Ya asignado a otro representante.'}, status=409)
+
+        est.representante = rep
+        est.save(update_fields=['representante'])
+        return JsonResponse({
+            'ok': True,
+            'id': est.pk,
+            'nombre': est.nombre_completo,
+            'cedula': est.cedula or '—',
+            'relacion': est.relacion_representante,
+        })
+
+
+class DesasignarEstudianteView(LoginRequiredMixin, AdminRequeridoMixin, View):
+    """POST /usuarios/usuarios/<pk>/desasignar/<est_pk>/"""
+    def post(self, request, pk, est_pk):
+        from apps.estudiantes.models import Estudiante
+        rep = get_object_or_404(Usuario, pk=pk)
+        est = get_object_or_404(Estudiante, pk=est_pk, representante=rep)
+        nombre = est.nombre_completo
+        est.representante = None
+        est.save(update_fields=['representante'])
+        return JsonResponse({'ok': True, 'nombre': nombre})
 
 class DashboardAdminView(LoginRequiredMixin, SecretariaRequeridaMixin, TemplateView):
     template_name = 'usuarios/dashboard_admin.html'

@@ -268,6 +268,19 @@ document.querySelectorAll('.seccion-btn').forEach(btn => {
 });
 
 // Mostrar/ocultar bloque discapacidad
+
+// Pre-seleccionar representante si viene ?representante=ID en la URL
+const urlParams = new URLSearchParams(window.location.search);
+const repId = urlParams.get('representante');
+if (repId) {
+    const sel = document.getElementById('id_representante');
+    if (sel) {
+        sel.value = repId;
+        // Scroll automático a la sección de representante
+        const card = sel.closest('.card');
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
 const chkDiscapacidad = document.getElementById('id_tiene_discapacidad');
 const bloqueDisc      = document.getElementById('bloque-discapacidad');
 if (chkDiscapacidad) {

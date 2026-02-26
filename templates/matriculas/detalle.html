@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block title %}Matrícula {{ matricula.codigo }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-file-earmark-check me-2" style="color:var(--acento);"></i>
+                Matrícula <code style="font-size:1rem;color:var(--azul-marino);">{{ matricula.codigo }}</code>
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'matriculas:lista' %}">Matrículas</a></li>
+                    <li class="breadcrumb-item active">{{ matricula.codigo }}</li>
+                </ol>
+            </nav>
+        </div>
+        {# Badge de estado grande #}
+        <div>
+            {% if matricula.estado == 'APROBADA' %}
+                <span class="badge" style="background:#198754;font-size:.95rem;padding:.45rem .9rem;">
+                    <i class="bi bi-check-circle me-1"></i>Aprobada
+                </span>
+            {% elif matricula.estado == 'PENDIENTE' %}
+                <span class="badge" style="background:#c8a84b;color:#000;font-size:.95rem;padding:.45rem .9rem;">
+                    <i class="bi bi-hourglass-split me-1"></i>Pendiente
+                </span>
+            {% elif matricula.estado == 'EN_REVISION' %}
+                <span class="badge" style="background:#0dcaf0;color:#000;font-size:.95rem;padding:.45rem .9rem;">
+                    <i class="bi bi-search me-1"></i>En revisión
+                </span>
+            {% elif matricula.estado == 'RECHAZADA' %}
+                <span class="badge" style="background:#dc3545;font-size:.95rem;padding:.45rem .9rem;">
+                    <i class="bi bi-x-circle me-1"></i>Rechazada
+                </span>
+            {% else %}
+                <span class="badge" style="background:#6c757d;font-size:.95rem;padding:.45rem .9rem;">{{ matricula.get_estado_display }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    {# ── Columna principal ── #}
+    <div class="col-lg-8">
+
+        {# Info estudiante #}
+        <div class="card mb-3">
+            <div class="card-header"><i class="bi bi-person-badge me-2"></i>Estudiante</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Nombre completo</div>
+                        <div style="font-weight:600;color:var(--azul-marino);margin-top:.15rem;">
+                            <a href="{% url 'estudiantes:detalle' matricula.estudiante.pk %}" style="color:inherit;text-decoration:none;">
+                                {{ matricula.estudiante.nombre_completo }}
+                                <i class="bi bi-arrow-up-right-square ms-1" style="font-size:.75rem;color:var(--acento);"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Cédula</div>
+                        <div style="font-weight:500;margin-top:.15rem;">{{ matricula.estudiante.cedula|default:"—" }}</div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Edad</div>
+                        <div style="font-weight:500;margin-top:.15rem;">{{ matricula.estudiante.edad|default:"—" }} años</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Info matrícula #}
+        <div class="card mb-3">
+            <div class="card-header"><i class="bi bi-diagram-3 me-2"></i>Datos de la matrícula</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Período académico</div>
+                        <div style="font-weight:600;color:var(--azul-marino);margin-top:.15rem;">{{ matricula.paralelo.periodo.nombre }}</div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Paralelo</div>
+                        <div style="font-weight:500;margin-top:.15rem;">{{ matricula.paralelo.nivel.nombre }} — {{ matricula.paralelo.nombre }}</div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Jornada</div>
+                        <div style="font-weight:500;margin-top:.15rem;">{{ matricula.paralelo.get_jornada_display|default:"—" }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Tipo</div>
+                        <div style="font-weight:500;margin-top:.15rem;">{{ matricula.get_tipo_display }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Fecha solicitud</div>
+                        <div style="font-weight:500;margin-top:.15rem;">{{ matricula.fecha_solicitud|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Días en proceso</div>
+                        <div style="font-weight:500;margin-top:.15rem;">{{ matricula.dias_en_proceso }} días</div>
+                    </div>
+                    {% if matricula.solicitante %}
+                    <div class="col-sm-6">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Solicitante</div>
+                        <div style="font-weight:500;margin-top:.15rem;">{{ matricula.solicitante.get_full_name|default:matricula.solicitante.username }}</div>
+                    </div>
+                    {% endif %}
+                    {% if matricula.revisado_por %}
+                    <div class="col-sm-6">
+                        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Revisado por</div>
+                        <div style="font-weight:500;margin-top:.15rem;">{{ matricula.revisado_por.get_full_name }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if matricula.motivo_rechazo %}
+                <div class="mt-3" style="background:#f8d7da;border-left:4px solid #dc3545;padding:.65rem .9rem;border-radius:0 4px 4px 0;font-size:.875rem;">
+                    <div style="font-weight:600;color:#842029;margin-bottom:.2rem;"><i class="bi bi-x-circle me-1"></i>Motivo de rechazo</div>
+                    {{ matricula.motivo_rechazo }}
+                </div>
+                {% endif %}
+                {% if matricula.observaciones %}
+                <div class="mt-3" style="background:var(--gris-claro);padding:.65rem .9rem;border-radius:4px;font-size:.875rem;">
+                    <div style="font-weight:600;margin-bottom:.2rem;">Observaciones</div>
+                    {{ matricula.observaciones|linebreaksbr }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Historial #}
+        <div class="card">
+            <div class="card-header"><i class="bi bi-clock-history me-2"></i>Historial de estados</div>
+            <div class="card-body p-0">
+                {% if historial %}
+                <div style="padding:.75rem 1rem;">
+                    {% for h in historial %}
+                    <div class="d-flex gap-3 mb-3">
+                        <div style="flex-shrink:0;">
+                            <div style="width:32px;height:32px;border-radius:50%;
+                                background:{% if h.estado_nuevo == 'APROBADA' %}#198754{% elif h.estado_nuevo == 'RECHAZADA' %}#dc3545{% elif h.estado_nuevo == 'EN_REVISION' %}#0dcaf0{% else %}var(--azul-marino){% endif %};
+                                display:flex;align-items:center;justify-content:center;">
+                                <i class="bi {% if h.estado_nuevo == 'APROBADA' %}bi-check{% elif h.estado_nuevo == 'RECHAZADA' %}bi-x{% elif h.estado_nuevo == 'EN_REVISION' %}bi-search{% else %}bi-circle{% endif %}"
+                                   style="color:#fff;font-size:.85rem;"></i>
+                            </div>
+                        </div>
+                        <div style="flex:1;padding-top:.1rem;">
+                            <div style="font-size:.82rem;font-weight:600;color:var(--azul-marino);">
+                                {{ h.get_estado_nuevo_display }}
+                                {% if h.estado_anterior %}
+                                <span style="font-weight:400;color:var(--gris-medio);">← {{ h.get_estado_anterior_display }}</span>
+                                {% endif %}
+                            </div>
+                            <div style="font-size:.78rem;color:var(--gris-medio);">
+                                {{ h.fecha|date:"d/m/Y H:i" }} — {{ h.usuario.get_full_name|default:h.usuario.username }}
+                            </div>
+                            {% if h.comentario %}
+                            <div style="font-size:.8rem;margin-top:.2rem;color:var(--gris-oscuro);">{{ h.comentario }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="padding:1.5rem;color:var(--gris-medio);text-align:center;margin:0;">Sin historial registrado</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ── Columna acciones (solo secretaría/admin) ── #}
+    <div class="col-lg-4">
+        {% if puede_gestionar %}
+        <div class="card mb-3">
+            <div class="card-header"><i class="bi bi-gear me-2"></i>Gestionar matrícula</div>
+            <div class="card-body d-grid gap-2">
+
+                {# Iniciar revisión #}
+                {% if matricula.estado == 'PENDIENTE' %}
+                <form method="post" action="{% url 'matriculas:iniciar-revision' matricula.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-institucional w-100">
+                        <i class="bi bi-search me-2"></i>Iniciar revisión
+                    </button>
+                </form>
+                {% endif %}
+
+                {# Aprobar #}
+                {% if matricula.estado == 'EN_REVISION' %}
+                <form method="post" action="{% url 'matriculas:aprobar' matricula.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        <textarea name="observaciones" class="form-control form-control-sm" rows="2"
+                                  placeholder="Observaciones (opcional)"></textarea>
+                    </div>
+                    <button type="submit" class="btn w-100" style="background:#198754;color:#fff;">
+                        <i class="bi bi-check-circle me-2"></i>Aprobar matrícula
+                    </button>
+                </form>
+
+                {# Rechazar #}
+                <button class="btn btn-outline-danger w-100" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#colRechazar">
+                    <i class="bi bi-x-circle me-2"></i>Rechazar
+                </button>
+                <div class="collapse" id="colRechazar">
+                    <form method="post" action="{% url 'matriculas:rechazar' matricula.pk %}">
+                        {% csrf_token %}
+                        <textarea name="motivo_rechazo" class="form-control form-control-sm mb-2" rows="3"
+                                  placeholder="Motivo del rechazo (requerido)…" required></textarea>
+                        <button type="submit" class="btn btn-danger w-100 btn-sm">
+                            Confirmar rechazo
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+
+                {# Anular #}
+                {% if matricula.estado != 'ANULADA' %}
+                <button class="btn btn-outline-secondary w-100 btn-sm" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#colAnular">
+                    <i class="bi bi-trash me-2"></i>Anular matrícula
+                </button>
+                <div class="collapse" id="colAnular">
+                    <form method="post" action="{% url 'matriculas:anular' matricula.pk %}">
+                        {% csrf_token %}
+                        <textarea name="motivo_anulacion" class="form-control form-control-sm mb-2" rows="3"
+                                  placeholder="Motivo de anulación (requerido)…" required></textarea>
+                        <button type="submit" class="btn btn-warning w-100 btn-sm">
+                            Confirmar anulación
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Info paralelo / cupo #}
+        <div class="card">
+            <div class="card-header"><i class="bi bi-bar-chart me-2"></i>Estado del paralelo</div>
+            <div class="card-body">
+                <div class="row g-2 text-center mb-2">
+                    <div class="col-4">
+                        <div style="font-size:.65rem;color:var(--gris-medio);text-transform:uppercase;">Máximo</div>
+                        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.2rem;color:var(--azul-marino);">
+                            {{ matricula.paralelo.cupo_maximo }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="font-size:.65rem;color:var(--gris-medio);text-transform:uppercase;">Matriculados</div>
+                        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.2rem;color:var(--azul-marino);">
+                            {{ matricula.paralelo.matriculados_aprobados }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="font-size:.65rem;color:var(--gris-medio);text-transform:uppercase;">Disponible</div>
+                        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.2rem;
+                            color:{% if matricula.paralelo.cupo_disponible == 0 %}#dc3545{% else %}#198754{% endif %};">
+                            {{ matricula.paralelo.cupo_disponible }}
+                        </div>
+                    </div>
+                </div>
+                <div style="background:#e9ecef;border-radius:4px;height:8px;overflow:hidden;">
+                    <div style="height:100%;border-radius:4px;width:{{ matricula.paralelo.porcentaje_ocupacion }}%;
+                        background:{% if matricula.paralelo.porcentaje_ocupacion >= 95 %}#dc3545{% elif matricula.paralelo.porcentaje_ocupacion >= 70 %}#c8a84b{% else %}#198754{% endif %};">
+                    </div>
+                </div>
+                <div style="text-align:right;font-size:.72rem;color:var(--gris-medio);margin-top:.2rem;">
+                    {{ matricula.paralelo.porcentaje_ocupacion }}% ocupado
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

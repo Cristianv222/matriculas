@@ -28,4 +28,7 @@ urlpatterns = [
     path('usuarios/crear/',                 views.UsuarioCreateView.as_view(), name='crear'),
     path('usuarios/<int:pk>/',              views.UsuarioDetailView.as_view(), name='detalle'),
     path('usuarios/<int:pk>/editar/',       views.UsuarioUpdateView.as_view(), name='editar'),
+    path('usuarios/<int:pk>/buscar-estudiante/',         views.BuscarEstudianteView.as_view(),    name='buscar-estudiante'),
+    path('usuarios/<int:pk>/asignar-estudiante/',         views.AsignarEstudianteView.as_view(),   name='asignar-estudiante'),
+    path('usuarios/<int:pk>/desasignar/<int:est_pk>/',    views.DesasignarEstudianteView.as_view(), name='desasignar-estudiante'),
 ]
