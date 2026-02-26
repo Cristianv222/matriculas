@@ -20,6 +20,8 @@
 
   web:
     build: .
+    command: python manage.py runserver
+    0.0.0.0:80000
     container_name: sfq_web
     restart: unless-stopped
     volumes:
