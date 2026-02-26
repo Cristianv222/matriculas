@@ -27,12 +27,21 @@ from .models import Usuario, SesionUsuario
 
 class AdminRequeridoMixin(UserPassesTestMixin):
     def test_func(self):
-        return self.request.user.is_authenticated and self.request.user.es_admin
+        u = self.request.user
+        return u.is_authenticated and (u.is_staff or u.is_superuser or u.es_admin)
 
 
 class SecretariaRequeridaMixin(UserPassesTestMixin):
     def test_func(self):
-        return self.request.user.is_authenticated and self.request.user.es_secretaria
+        u = self.request.user
+        if not u.is_authenticated:
+            return False
+        if u.is_staff or u.is_superuser:
+            return True
+        try:
+            return bool(u.es_admin) or bool(u.es_secretaria)
+        except Exception:
+            return False
 
 
 # ── Utilidad: registrar sesión ────────────────────────────────────────────────
@@ -373,7 +382,7 @@ class DesasignarEstudianteView(LoginRequiredMixin, AdminRequeridoMixin, View):
         est.save(update_fields=['representante'])
         return JsonResponse({'ok': True, 'nombre': nombre})
 
-class DashboardAdminView(LoginRequiredMixin, SecretariaRequeridaMixin, TemplateView):
+class DashboardAdminView(LoginRequiredMixin, TemplateView):
     template_name = 'usuarios/dashboard_admin.html'
 
     def get_context_data(self, **kwargs):

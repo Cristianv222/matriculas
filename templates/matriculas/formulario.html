@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo|default:"Nueva solicitud de matrícula" }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-file-earmark-plus me-2" style="color:var(--acento);"></i>{{ titulo|default:"Nueva solicitud de matrícula" }}</h1>
+            <nav aria-label="breadcrumb"><ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'matriculas:lista' %}">Mis solicitudes</a></li>
+                <li class="breadcrumb-item active">{{ titulo|default:"Nueva solicitud" }}</li>
+            </ol></nav>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+
+        {# ── Aviso si no hay período activo ── #}
+        {% if not periodo_activo %}
+        <div style="background:#fff3cd;border-left:4px solid #c8a84b;padding:.75rem 1rem;border-radius:0 6px 6px 0;margin-bottom:1.5rem;font-size:.875rem;">
+            <i class="bi bi-exclamation-triangle me-1" style="color:#c8a84b;"></i>
+            <strong>No hay un período de matrícula abierto en este momento.</strong>
+            Consulte con la secretaría del plantel.
+        </div>
+        {% endif %}
+
+        <form method="post"
+              action="{% if form.instance.pk %}{% url 'matriculas:editar' form.instance.pk %}{% else %}{% url 'matriculas:crear' %}{% endif %}"
+              novalidate>
+            {% csrf_token %}
+
+            {# ── Estudiante ── #}
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-person me-2"></i>Estudiante</div>
+                <div class="card-body">
+                    <label class="form-label">Estudiante a matricular <span class="text-danger">*</span></label>
+                    {{ form.estudiante }}
+                    {% if form.estudiante.errors %}
+                    <div style="font-size:.78rem;color:#dc3545;margin-top:.25rem;">{{ form.estudiante.errors|first }}</div>
+                    {% endif %}
+                    {% if not request.user.is_staff %}
+                    <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.3rem;">
+                        Solo aparecen los estudiantes a su cargo. Si no ve al estudiante,
+                        <a href="{% url 'usuarios:perfil' %}">actualice su perfil</a>.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# ── Paralelo ── #}
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-diagram-3 me-2"></i>Curso solicitado</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Paralelo <span class="text-danger">*</span></label>
+                            {{ form.paralelo }}
+                            {% if form.paralelo.errors %}
+                            <div style="font-size:.78rem;color:#dc3545;margin-top:.25rem;">{{ form.paralelo.errors|first }}</div>
+                            {% endif %}
+                            <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.3rem;">
+                                Solo se muestran paralelos con cupo disponible del período activo.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de matrícula <span class="text-danger">*</span></label>
+                            {{ form.tipo }}
+                            {% if form.tipo.errors %}
+                            <div style="font-size:.78rem;color:#dc3545;margin-top:.25rem;">{{ form.tipo.errors|first }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── Matrícula anterior (solo renovación) ── #}
+            <div class="card mb-3" id="tarjetaAnterior" style="{% if form.instance.tipo != 'RENOVACION' %}display:none;{% endif %}">
+                <div class="card-header"><i class="bi bi-arrow-repeat me-2"></i>Renovación</div>
+                <div class="card-body">
+                    <label class="form-label">Matrícula del período anterior</label>
+                    {{ form.matricula_anterior }}
+                    {% if form.matricula_anterior.errors %}
+                    <div style="font-size:.78rem;color:#dc3545;margin-top:.25rem;">{{ form.matricula_anterior.errors|first }}</div>
+                    {% endif %}
+                    <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.3rem;">
+                        Seleccione la matrícula aprobada del período anterior de este mismo estudiante.
+                    </div>
+                </div>
+            </div>
+
+            {# ── Errores generales ── #}
+            {% if form.non_field_errors %}
+            <div style="border-left:4px solid #dc3545;background:#f8d7da;color:#842029;padding:.65rem 1rem;border-radius:4px;font-size:.85rem;margin-bottom:1rem;">
+                {% for e in form.non_field_errors %}<div><i class="bi bi-x-circle me-1"></i>{{ e }}</div>{% endfor %}
+            </div>
+            {% endif %}
+
+            {# ── Aviso importante ── #}
+            <div style="background:#e8f4fd;border-left:4px solid #0d6efd;padding:.65rem 1rem;border-radius:0 6px 6px 0;font-size:.83rem;margin-bottom:1.25rem;">
+                <i class="bi bi-info-circle me-1" style="color:#0d6efd;"></i>
+                Su solicitud quedará en estado <strong>Pendiente</strong> hasta que la secretaría la revise y apruebe.
+                Recibirá una notificación cuando cambie de estado.
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{% url 'matriculas:lista' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x me-1"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-institucional"
+                        {% if not periodo_activo %}disabled title="No hay período de matrícula abierto"{% endif %}>
+                    <i class="bi bi-send me-1"></i>{{ accion|default:"Enviar solicitud" }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {# ── Panel lateral de ayuda ── #}
+    <div class="col-lg-4 mt-4 mt-lg-0">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-question-circle me-2"></i>¿Cómo funciona?</div>
+            <div class="card-body" style="font-size:.85rem;">
+                <ol style="padding-left:1.1rem;margin:0;line-height:1.8;">
+                    <li>Seleccione el <strong>estudiante</strong> a matricular.</li>
+                    <li>Elija el <strong>paralelo</strong> (nivel y jornada).</li>
+                    <li>Indique si es <strong>nueva</strong> o <strong>renovación</strong>.</li>
+                    <li>Envíe la solicitud — quedará en estado <strong>Pendiente</strong>.</li>
+                    <li>La secretaría revisará y aprobará o rechazará.</li>
+                </ol>
+                <hr style="margin:.85rem 0;">
+                <div style="color:var(--gris-medio);">
+                    <i class="bi bi-clock me-1"></i>Tiempo estimado de respuesta: <strong>1–3 días hábiles</strong>.
+                </div>
+            </div>
+        </div>
+
+        {% if periodo_activo %}
+        <div class="card mt-3">
+            <div class="card-header"><i class="bi bi-calendar-check me-2"></i>Período activo</div>
+            <div class="card-body" style="font-size:.85rem;">
+                <div style="font-weight:600;color:var(--azul-marino);">{{ periodo_activo.nombre }}</div>
+                <div style="color:var(--gris-medio);margin-top:.35rem;">
+                    Matrículas: {{ periodo_activo.fecha_inicio_matriculas|date:"d/m/Y" }} — {{ periodo_activo.fecha_fin_matriculas|date:"d/m/Y" }}
+                </div>
+                {% if periodo_activo.matriculas_extraordinarias_abiertas %}
+                <div style="color:#c8a84b;margin-top:.35rem;">
+                    <i class="bi bi-star me-1"></i>Período extraordinario abierto.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Mostrar/ocultar tarjeta de matrícula anterior según tipo
+const tipoSelect = document.getElementById('{{ form.tipo.id_for_label }}');
+const tarjeta    = document.getElementById('tarjetaAnterior');
+
+function toggleAnterior() {
+    if (tipoSelect && tarjeta) {
+        tarjeta.style.display = tipoSelect.value === 'RENOVACION' ? '' : 'none';
+    }
+}
+
+if (tipoSelect) {
+    tipoSelect.addEventListener('change', toggleAnterior);
+    toggleAnterior();
+}
+</script>
+{% endblock %}

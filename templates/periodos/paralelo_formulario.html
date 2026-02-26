@@ -81,7 +81,6 @@
             </div>
         </div>
 
-        {# Info cupo si editando #}
         {% if form.instance.pk %}
         <div class="card mt-3">
             <div class="card-header"><i class="bi bi-bar-chart me-2"></i>Estado actual del cupo</div>
@@ -97,8 +96,7 @@
                     </div>
                     <div class="col-4">
                         <div style="font-size:.7rem;color:var(--gris-medio);text-transform:uppercase;letter-spacing:.06em;">Disponible</div>
-                        <div style="font-size:1.5rem;font-family:'Lora',serif;font-weight:700;
-                            color:{% if form.instance.cupo_disponible == 0 %}#dc3545{% else %}#198754{% endif %};">
+                        <div style="font-size:1.5rem;font-family:'Lora',serif;font-weight:700;color:{% if form.instance.cupo_disponible == 0 %}#dc3545{% else %}#198754{% endif %};">
                             {{ form.instance.cupo_disponible }}
                         </div>
                     </div>
@@ -117,6 +115,7 @@
     </div>
 </div>
 
+{# ══ MODAL — usa el NivelForm real de Django para que los choices sean exactos ══ #}
 <div class="modal fade" id="modalNivel" tabindex="-1" aria-labelledby="modalNivelLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -127,9 +126,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                {# Alerta resultado #}
                 <div id="nivelAlerta" style="display:none;" class="mb-3"></div>
-
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label">Nombre <span class="text-danger">*</span></label>
@@ -141,15 +138,8 @@
                     </div>
                     <div class="col-md-8">
                         <label class="form-label">Subnivel educativo</label>
-                        <select id="nivelSubnivel" class="form-select">
-                            <option value="">— Sin especificar —</option>
-                            <option value="PREPARATORIA">Preparatoria (1ro EGB)</option>
-                            <option value="ELEMENTAL">Elemental (2do – 4to EGB)</option>
-                            <option value="MEDIA">Media (5to – 7mo EGB)</option>
-                            <option value="SUPERIOR">Superior (8vo – 10mo EGB)</option>
-                            <option value="BGU">BGU (1ro – 3ro BGU)</option>
-                            <option value="TECNICO">Bachillerato Técnico</option>
-                        </select>
+                        {# Renderizamos el widget real del NivelForm para tener los choices exactos del modelo #}
+                        {{ nivel_form.subnivel }}
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Orden</label>
@@ -158,8 +148,7 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label">Descripción</label>
-                        <input type="text" id="nivelDescripcion" class="form-control"
-                               placeholder="Opcional">
+                        <input type="text" id="nivelDescripcion" class="form-control" placeholder="Opcional">
                     </div>
                 </div>
             </div>
@@ -178,14 +167,14 @@
 
 {% block extra_js %}
 <script>
-// ── Crear nivel via AJAX ──────────────────────────────────────────────────────
 document.getElementById('btnGuardarNivel').addEventListener('click', function() {
-    const nombre    = document.getElementById('nivelNombre').value.trim();
-    const subnivel  = document.getElementById('nivelSubnivel').value;
-    const orden     = document.getElementById('nivelOrden').value;
+    const nombre      = document.getElementById('nivelNombre').value.trim();
+    // Leemos el select que renderizó Django (id = id_subnivel del NivelForm)
+    const subnivel    = document.getElementById('id_subnivel').value;
+    const orden       = document.getElementById('nivelOrden').value;
     const descripcion = document.getElementById('nivelDescripcion').value.trim();
-    const alerta    = document.getElementById('nivelAlerta');
-    const btn       = this;
+    const alerta      = document.getElementById('nivelAlerta');
+    const btn         = this;
 
     if (!nombre) {
         alerta.style.display = 'block';
@@ -206,9 +195,9 @@ document.getElementById('btnGuardarNivel').addEventListener('click', function() 
             'X-Requested-With': 'XMLHttpRequest',
         },
         body: new URLSearchParams({
-            nombre: nombre,
-            subnivel: subnivel,
-            orden: orden,
+            nombre:      nombre,
+            subnivel:    subnivel,
+            orden:       orden,
             descripcion: descripcion,
         })
     })
@@ -223,22 +212,22 @@ document.getElementById('btnGuardarNivel').addEventListener('click', function() 
             return;
         }
 
-        // Agregar la nueva opción al select de niveles y seleccionarla
+        // Agregar al select de niveles del paralelo y seleccionarlo
         const sel = document.getElementById('id_nivel');
         const opt = document.createElement('option');
-        opt.value = data.id;
-        opt.text  = data.nombre;
+        opt.value    = data.id;
+        opt.text     = data.nombre;
         opt.selected = true;
         sel.appendChild(opt);
 
         // Cerrar modal y limpiar
         bootstrap.Modal.getInstance(document.getElementById('modalNivel')).hide();
         document.getElementById('nivelNombre').value = '';
-        document.getElementById('nivelSubnivel').value = '';
-        document.getElementById('nivelOrden').value = '1';
+        document.getElementById('id_subnivel').value = '';
+        document.getElementById('nivelOrden').value  = '1';
         document.getElementById('nivelDescripcion').value = '';
 
-        // Toast de confirmación
+        // Toast
         const toast = document.createElement('div');
         toast.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;background:#198754;color:#fff;padding:.6rem 1rem;border-radius:6px;font-size:.875rem;box-shadow:0 3px 12px rgba(0,0,0,.2);';
         toast.innerHTML = `<i class="bi bi-check-circle me-1"></i>Nivel "<strong>${data.nombre}</strong>" creado y seleccionado.`;
@@ -253,13 +242,11 @@ document.getElementById('btnGuardarNivel').addEventListener('click', function() 
     });
 });
 
-// Limpiar alerta al abrir modal
 document.getElementById('modalNivel').addEventListener('show.bs.modal', () => {
     document.getElementById('nivelAlerta').style.display = 'none';
     document.getElementById('nivelNombre').value = '';
 });
 
-// Enter en el campo nombre dispara guardar
 document.getElementById('nivelNombre').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btnGuardarNivel').click(); }
 });

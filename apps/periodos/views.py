@@ -202,6 +202,7 @@ class ParaleloCreateView(LoginRequiredMixin, AdminRequeridoMixin, CreateView):
         ctx = super().get_context_data(**kwargs)
         ctx['titulo'] = 'Nuevo Paralelo'
         ctx['accion'] = 'Crear paralelo'
+        ctx['nivel_form'] = NivelForm()
         return ctx
 
 
@@ -219,6 +220,7 @@ class ParaleloUpdateView(LoginRequiredMixin, AdminRequeridoMixin, UpdateView):
         ctx = super().get_context_data(**kwargs)
         ctx['titulo'] = f'Editar: {self.object}'
         ctx['accion'] = 'Guardar cambios'
+        ctx['nivel_form'] = NivelForm()
         return ctx
 
 

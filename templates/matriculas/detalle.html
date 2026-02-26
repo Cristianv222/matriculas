@@ -177,7 +177,7 @@
 
                 {# Iniciar revisión #}
                 {% if matricula.estado == 'PENDIENTE' %}
-                <form method="post" action="{% url 'matriculas:iniciar-revision' matricula.pk %}">
+                <form method="post" action="{% url 'matriculas:iniciar_revision' matricula.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-institucional w-100">
                         <i class="bi bi-search me-2"></i>Iniciar revisión
@@ -206,7 +206,7 @@
                 <div class="collapse" id="colRechazar">
                     <form method="post" action="{% url 'matriculas:rechazar' matricula.pk %}">
                         {% csrf_token %}
-                        <textarea name="motivo_rechazo" class="form-control form-control-sm mb-2" rows="3"
+                        <textarea name="motivo" class="form-control form-control-sm mb-2" rows="3"
                                   placeholder="Motivo del rechazo (requerido)…" required></textarea>
                         <button type="submit" class="btn btn-danger w-100 btn-sm">
                             Confirmar rechazo
@@ -224,7 +224,7 @@
                 <div class="collapse" id="colAnular">
                     <form method="post" action="{% url 'matriculas:anular' matricula.pk %}">
                         {% csrf_token %}
-                        <textarea name="motivo_anulacion" class="form-control form-control-sm mb-2" rows="3"
+                        <textarea name="motivo" class="form-control form-control-sm mb-2" rows="3"
                                   placeholder="Motivo de anulación (requerido)…" required></textarea>
                         <button type="submit" class="btn btn-warning w-100 btn-sm">
                             Confirmar anulación
