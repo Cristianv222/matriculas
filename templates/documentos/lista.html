@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Documentos — {{ matricula.codigo }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+    <div>
+      <h1><i class="bi bi-folder2-open me-2" style="color:var(--acento);"></i>
+        Documentos
+        <code style="font-size:.9rem;color:var(--azul-marino);">{{ matricula.codigo }}</code>
+      </h1>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'matriculas:lista' %}">Matrículas</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'matriculas:detalle' matricula.pk %}">{{ matricula.codigo }}</a></li>
+          <li class="breadcrumb-item active">Documentos</li>
+        </ol>
+      </nav>
+    </div>
+    {% if es_personal %}
+    <a href="{% url 'documentos:panel' %}" class="btn btn-outline-institucional btn-sm">
+      <i class="bi bi-grid me-1"></i>Panel de documentos
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{# ── Barra de progreso ── #}
+<div class="card mb-3">
+  <div class="card-body py-3">
+    <div class="row g-3 text-center mb-2">
+      <div class="col-3">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Total</div>
+        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.4rem;color:var(--azul-marino);">{{ total }}</div>
+      </div>
+      <div class="col-3">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#198754;">Verificados</div>
+        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.4rem;color:#198754;">{{ verificados }}</div>
+      </div>
+      <div class="col-3">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#c8a84b;">Pendientes</div>
+        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.4rem;color:#c8a84b;">{{ pendientes }}</div>
+      </div>
+      <div class="col-3">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#dc3545;">Faltantes</div>
+        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.4rem;color:#dc3545;">{{ faltantes }}</div>
+      </div>
+    </div>
+    {% if total > 0 %}
+    <div style="background:#e9ecef;border-radius:6px;height:10px;overflow:hidden;">
+      <div style="height:100%;border-radius:6px;width:{% widthratio verificados total 100 %}%;
+          background:linear-gradient(90deg,#198754,#20c997);transition:width .4s ease;"></div>
+    </div>
+    <div style="text-align:right;font-size:.72rem;color:var(--gris-medio);margin-top:.3rem;">
+      {% widthratio verificados total 100 %}% completado
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{# ── Lista de requisitos ── #}
+{% if requisitos %}
+<div class="card">
+  <div class="card-header"><i class="bi bi-list-check me-2"></i>Requisitos documentales</div>
+  <div class="card-body p-0">
+    {% for req in requisitos %}
+    <div class="d-flex align-items-start gap-3 p-3 {% if not forloop.last %}border-bottom{% endif %}">
+
+      {# Icono de estado #}
+      <div style="flex-shrink:0;margin-top:.1rem;">
+        {% if req.documento %}
+          {% if req.documento.estado == 'VERIFICADO' %}
+            <div style="width:36px;height:36px;border-radius:50%;background:#198754;display:flex;align-items:center;justify-content:center;">
+              <i class="bi bi-check-lg" style="color:#fff;font-size:1rem;"></i>
+            </div>
+          {% elif req.documento.estado == 'RECHAZADO' %}
+            <div style="width:36px;height:36px;border-radius:50%;background:#dc3545;display:flex;align-items:center;justify-content:center;">
+              <i class="bi bi-x-lg" style="color:#fff;font-size:1rem;"></i>
+            </div>
+          {% else %}
+            <div style="width:36px;height:36px;border-radius:50%;background:#c8a84b;display:flex;align-items:center;justify-content:center;">
+              <i class="bi bi-hourglass-split" style="color:#fff;font-size:.85rem;"></i>
+            </div>
+          {% endif %}
+        {% else %}
+          <div style="width:36px;height:36px;border-radius:50%;background:{% if req.tipo.es_obligatorio %}#dc354520{% else %}#6c757d20{% endif %};border:2px dashed {% if req.tipo.es_obligatorio %}#dc3545{% else %}#6c757d{% endif %};display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-upload" style="color:{% if req.tipo.es_obligatorio %}#dc3545{% else %}#6c757d{% endif %};font-size:.8rem;"></i>
+          </div>
+        {% endif %}
+      </div>
+
+      {# Contenido #}
+      <div style="flex:1;min-width:0;">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <span style="font-weight:600;color:var(--azul-marino);">{{ req.tipo.nombre }}</span>
+          {% if req.tipo.es_obligatorio %}
+            <span class="badge" style="background:#dc354520;color:#dc3545;font-size:.68rem;">Obligatorio</span>
+          {% else %}
+            <span class="badge" style="background:#6c757d20;color:#6c757d;font-size:.68rem;">Opcional</span>
+          {% endif %}
+          {% if req.documento %}
+            {% if req.documento.estado == 'VERIFICADO' %}
+              <span class="badge" style="background:#19875420;color:#198754;font-size:.68rem;">Verificado</span>
+            {% elif req.documento.estado == 'RECHAZADO' %}
+              <span class="badge" style="background:#dc354520;color:#dc3545;font-size:.68rem;">Rechazado</span>
+            {% else %}
+              <span class="badge" style="background:#c8a84b20;color:#c8a84b;font-size:.68rem;">Pendiente revisión</span>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        {% if req.tipo.descripcion %}
+        <div style="font-size:.78rem;color:var(--gris-medio);margin-top:.15rem;">{{ req.tipo.descripcion }}</div>
+        {% endif %}
+
+        <div style="font-size:.72rem;color:var(--gris-medio);margin-top:.1rem;">
+          Formatos: {{ req.tipo.formatos_permitidos }} · Máx. {{ req.tipo.tamano_maximo_mb }} MB
+        </div>
+
+        {% if req.documento %}
+          <div style="font-size:.78rem;margin-top:.3rem;color:var(--gris-oscuro);">
+            <i class="bi bi-paperclip me-1"></i>
+            {{ req.documento.nombre_original|default:req.documento.archivo.name }}
+            <span style="color:var(--gris-medio);">({{ req.documento.tamano_legible }})</span>
+          </div>
+          {% if req.documento.estado == 'RECHAZADO' and req.documento.observacion %}
+          <div class="mt-2" style="background:#f8d7da;border-left:3px solid #dc3545;padding:.4rem .7rem;border-radius:0 4px 4px 0;font-size:.78rem;color:#842029;">
+            <i class="bi bi-exclamation-circle me-1"></i><strong>Motivo:</strong> {{ req.documento.observacion }}
+          </div>
+          {% endif %}
+          {% if req.documento.estado == 'VERIFICADO' and req.documento.verificado_por %}
+          <div style="font-size:.72rem;color:#198754;margin-top:.2rem;">
+            <i class="bi bi-person-check me-1"></i>Verificado por {{ req.documento.verificado_por.get_full_name }} — {{ req.documento.fecha_verificacion|date:"d/m/Y H:i" }}
+          </div>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      {# Acciones #}
+      <div class="d-flex flex-column gap-1" style="flex-shrink:0;">
+        {% if req.documento %}
+          <a href="{% url 'documentos:descargar' req.documento.pk %}" target="_blank"
+             class="btn btn-outline-secondary btn-sm" style="font-size:.75rem;">
+            <i class="bi bi-eye me-1"></i>Ver
+          </a>
+          {% if req.documento.estado != 'VERIFICADO' %}
+          <a href="{% url 'documentos:subir' matricula.pk req.tipo.pk %}"
+             class="btn btn-outline-institucional btn-sm" style="font-size:.75rem;">
+            <i class="bi bi-arrow-repeat me-1"></i>Reemplazar
+          </a>
+          {% endif %}
+          {% if es_personal %}
+            {% if req.documento.estado == 'PENDIENTE' %}
+            <form method="post" action="{% url 'documentos:verificar' req.documento.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm w-100" style="background:#198754;color:#fff;font-size:.75rem;">
+                <i class="bi bi-check-circle me-1"></i>Verificar
+              </button>
+            </form>
+            <button type="button" class="btn btn-outline-danger btn-sm" style="font-size:.75rem;"
+                    data-bs-toggle="collapse" data-bs-target="#rechazar-{{ req.documento.pk }}">
+              <i class="bi bi-x-circle me-1"></i>Rechazar
+            </button>
+            <div class="collapse mt-1" id="rechazar-{{ req.documento.pk }}">
+              <form method="post" action="{% url 'documentos:rechazar' req.documento.pk %}">
+                {% csrf_token %}
+                <textarea name="observacion" class="form-control form-control-sm mb-1" rows="2"
+                          placeholder="Motivo del rechazo…" required style="font-size:.75rem;"></textarea>
+                <button type="submit" class="btn btn-danger btn-sm w-100" style="font-size:.75rem;">
+                  Confirmar rechazo
+                </button>
+              </form>
+            </div>
+            {% endif %}
+          {% else %}
+            {% if req.documento.estado != 'VERIFICADO' %}
+            <form method="post" action="{% url 'documentos:eliminar' req.documento.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="font-size:.75rem;"
+                      onclick="return confirm('¿Eliminar este documento?')">
+                <i class="bi bi-trash me-1"></i>Eliminar
+              </button>
+            </form>
+            {% endif %}
+          {% endif %}
+        {% else %}
+          <a href="{% url 'documentos:subir' matricula.pk req.tipo.pk %}"
+             class="btn btn-institucional btn-sm" style="font-size:.75rem;">
+            <i class="bi bi-upload me-1"></i>Subir
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% else %}
+<div class="card">
+  <div class="card-body text-center py-5" style="color:var(--gris-medio);">
+    <i class="bi bi-folder2-open" style="font-size:2.5rem;display:block;margin-bottom:1rem;"></i>
+    No hay requisitos documentales configurados para este tipo de matrícula.
+    {% if es_personal %}
+    <div class="mt-3">
+      <a href="/admin/documentos/tipodocumento/add/" class="btn btn-institucional btn-sm">
+        <i class="bi bi-plus-circle me-1"></i>Configurar tipos de documento
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

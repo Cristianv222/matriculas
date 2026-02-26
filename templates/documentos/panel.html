@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Panel de Documentos{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-folder-check me-2" style="color:var(--acento);"></i>Panel de Documentos</h1>
+</div>
+
+{# Contadores #}
+<div class="row g-3 mb-3">
+  <div class="col-sm-4">
+    <div class="card text-center" style="border-left:4px solid #c8a84b;">
+      <div class="card-body py-2">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Pendientes</div>
+        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.8rem;color:#c8a84b;">{{ conteo.pendientes }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card text-center" style="border-left:4px solid #198754;">
+      <div class="card-body py-2">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Verificados</div>
+        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.8rem;color:#198754;">{{ conteo.verificados }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card text-center" style="border-left:4px solid #dc3545;">
+      <div class="card-body py-2">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">Rechazados</div>
+        <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.8rem;color:#dc3545;">{{ conteo.rechazados }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Filtros #}
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="?estado=PENDIENTE"
+         class="btn btn-sm {% if estado_filtrado == 'PENDIENTE' %}btn-institucional{% else %}btn-outline-secondary{% endif %}">
+        Pendientes
+      </a>
+      <a href="?estado=VERIFICADO"
+         class="btn btn-sm {% if estado_filtrado == 'VERIFICADO' %}btn-institucional{% else %}btn-outline-secondary{% endif %}">
+        Verificados
+      </a>
+      <a href="?estado=RECHAZADO"
+         class="btn btn-sm {% if estado_filtrado == 'RECHAZADO' %}btn-institucional{% else %}btn-outline-secondary{% endif %}">
+        Rechazados
+      </a>
+      <a href="?" class="btn btn-sm btn-outline-secondary ms-auto">
+        <i class="bi bi-x-circle me-1"></i>Todos
+      </a>
+    </div>
+  </div>
+</div>
+
+{# Tabla #}
+<div class="card">
+  <div class="card-body p-0">
+    {% if documentos %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" style="font-size:.875rem;">
+        <thead style="background:var(--gris-claro);">
+          <tr>
+            <th style="padding:.75rem 1rem;">Matrícula</th>
+            <th>Estudiante</th>
+            <th>Documento</th>
+            <th>Estado</th>
+            <th>Subido</th>
+            <th style="width:160px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doc in documentos %}
+          <tr>
+            <td style="padding:.75rem 1rem;">
+              <a href="{% url 'matriculas:detalle' doc.matricula.pk %}"
+                 style="color:var(--azul-marino);font-weight:600;text-decoration:none;">
+                {{ doc.matricula.codigo }}
+              </a>
+            </td>
+            <td>{{ doc.matricula.estudiante.nombre_completo }}</td>
+            <td>
+              <div style="font-weight:500;">{{ doc.tipo.nombre }}</div>
+              <div style="font-size:.72rem;color:var(--gris-medio);">{{ doc.tamano_legible }}</div>
+            </td>
+            <td>
+              {% if doc.estado == 'VERIFICADO' %}
+                <span class="badge" style="background:#19875420;color:#198754;">Verificado</span>
+              {% elif doc.estado == 'RECHAZADO' %}
+                <span class="badge" style="background:#dc354520;color:#dc3545;">Rechazado</span>
+              {% else %}
+                <span class="badge" style="background:#c8a84b20;color:#c8a84b;">Pendiente</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--gris-medio);font-size:.78rem;">{{ doc.created_at|date:"d/m/Y H:i" }}</td>
+            <td>
+              <div class="d-flex gap-1">
+                <a href="{% url 'documentos:descargar' doc.pk %}" target="_blank"
+                   class="btn btn-outline-secondary btn-sm" title="Ver">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a href="{% url 'documentos:lista' doc.matricula.pk %}"
+                   class="btn btn-outline-institucional btn-sm" title="Ir a documentos">
+                  <i class="bi bi-folder2"></i>
+                </a>
+                {% if doc.estado == 'PENDIENTE' %}
+                <form method="post" action="{% url 'documentos:verificar' doc.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm" style="background:#198754;color:#fff;" title="Verificar">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {# Paginación #}
+    {% if is_paginated %}
+    <div class="d-flex justify-content-center py-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&estado={{ estado_filtrado }}">‹</a>
+          </li>
+          {% endif %}
+          <li class="page-item active">
+            <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+          </li>
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}&estado={{ estado_filtrado }}">›</a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-5" style="color:var(--gris-medio);">
+      <i class="bi bi-folder2-open" style="font-size:2rem;display:block;margin-bottom:.75rem;"></i>
+      No hay documentos {% if estado_filtrado %}con estado "{{ estado_filtrado }}"{% endif %}.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

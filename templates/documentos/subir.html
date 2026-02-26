@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Subir — {{ tipo.nombre }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-upload me-2" style="color:var(--acento);"></i>{{ tipo.nombre }}</h1>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'matriculas:lista' %}">Matrículas</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'matriculas:detalle' matricula.pk %}">{{ matricula.codigo }}</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'documentos:lista' matricula.pk %}">Documentos</a></li>
+      <li class="breadcrumb-item active">Subir</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-file-earmark-arrow-up me-2"></i>Seleccionar archivo</div>
+      <div class="card-body">
+
+        {% if documento %}
+        <div class="mb-3" style="background:var(--gris-claro);border-radius:6px;padding:.75rem 1rem;font-size:.875rem;">
+          <div style="font-weight:600;margin-bottom:.2rem;">Archivo actual:</div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi {% if documento.es_pdf %}bi-file-pdf{% elif documento.es_imagen %}bi-file-image{% else %}bi-file-earmark{% endif %}"
+               style="font-size:1.2rem;color:var(--azul-marino);"></i>
+            <span>{{ documento.nombre_original|default:documento.archivo.name }}</span>
+            <span style="color:var(--gris-medio);">({{ documento.tamano_legible }})</span>
+            <a href="{% url 'documentos:descargar' documento.pk %}" target="_blank"
+               class="btn btn-outline-secondary btn-sm ms-auto" style="font-size:.72rem;">
+              <i class="bi bi-eye me-1"></i>Ver
+            </a>
+          </div>
+          {% if documento.estado == 'RECHAZADO' and documento.observacion %}
+          <div class="mt-2" style="background:#f8d7da;border-left:3px solid #dc3545;padding:.4rem .7rem;border-radius:0 4px 4px 0;color:#842029;">
+            <i class="bi bi-exclamation-circle me-1"></i><strong>Motivo de rechazo:</strong> {{ documento.observacion }}
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          {# Drop zone #}
+          <div id="dropZone" style="border:2px dashed var(--gris-claro);border-radius:8px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1rem;"
+               onclick="document.getElementById('archivoInput').click()"
+               ondragover="event.preventDefault();this.style.borderColor='var(--acento)';this.style.background='#f0f4ff';"
+               ondragleave="this.style.borderColor='var(--gris-claro)';this.style.background='';"
+               ondrop="handleDrop(event)">
+            <i class="bi bi-cloud-upload" style="font-size:2rem;color:var(--gris-medio);display:block;margin-bottom:.5rem;"></i>
+            <div style="font-weight:600;color:var(--azul-marino);">Arrastra tu archivo aquí</div>
+            <div style="font-size:.82rem;color:var(--gris-medio);margin-top:.25rem;">o haz clic para seleccionar</div>
+            <div id="archivoNombre" style="margin-top:.75rem;font-size:.82rem;color:var(--acento);font-weight:600;display:none;"></div>
+          </div>
+
+          <input type="file" id="archivoInput" name="archivo" style="display:none;"
+                 accept="{{ tipo.formatos_permitidos }}"
+                 onchange="mostrarNombre(this)">
+
+          <div style="font-size:.78rem;color:var(--gris-medio);margin-bottom:1.5rem;">
+            <i class="bi bi-info-circle me-1"></i>
+            Formatos permitidos: <strong>{{ tipo.formatos_permitidos }}</strong> ·
+            Tamaño máximo: <strong>{{ tipo.tamano_maximo_mb }} MB</strong>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-institucional" id="btnSubir" disabled>
+              <i class="bi bi-upload me-2"></i>{% if documento %}Reemplazar documento{% else %}Subir documento{% endif %}
+            </button>
+            <a href="{% url 'documentos:lista' matricula.pk %}" class="btn btn-outline-secondary">
+              Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-info-circle me-2"></i>Información del documento</div>
+      <div class="card-body">
+        <div style="font-weight:600;color:var(--azul-marino);margin-bottom:.5rem;">{{ tipo.nombre }}</div>
+        {% if tipo.es_obligatorio %}
+        <span class="badge mb-2" style="background:#dc354520;color:#dc3545;">Obligatorio</span>
+        {% else %}
+        <span class="badge mb-2" style="background:#6c757d20;color:#6c757d;">Opcional</span>
+        {% endif %}
+        {% if tipo.descripcion %}
+        <p style="font-size:.875rem;color:var(--gris-oscuro);margin-top:.5rem;">{{ tipo.descripcion }}</p>
+        {% endif %}
+        <hr style="border-color:var(--gris-claro);">
+        <div style="font-size:.78rem;color:var(--gris-medio);">
+          <div class="mb-1"><i class="bi bi-file-earmark me-1"></i>Formatos: {{ tipo.formatos_permitidos }}</div>
+          <div><i class="bi bi-hdd me-1"></i>Tamaño máximo: {{ tipo.tamano_maximo_mb }} MB</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function mostrarNombre(input) {
+  const nombre = document.getElementById('archivoNombre');
+  const btn = document.getElementById('btnSubir');
+  if (input.files && input.files[0]) {
+    nombre.textContent = '✓ ' + input.files[0].name;
+    nombre.style.display = 'block';
+    btn.disabled = false;
+    document.getElementById('dropZone').style.borderColor = 'var(--acento)';
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').style.borderColor = 'var(--gris-claro)';
+  document.getElementById('dropZone').style.background = '';
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    const input = document.getElementById('archivoInput');
+    input.files = files;
+    mostrarNombre(input);
+  }
+}
+</script>
+{% endblock %}

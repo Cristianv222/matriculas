@@ -27,6 +27,13 @@
 </div>
 
 <div class="sidebar-section">
+    <div class="sidebar-section-label">Documentos</div>
+    <a href="{% url 'documentos:panel' %}" class="sidebar-link">
+        <i class="bi bi-folder-check"></i> Revisar documentos
+    </a>
+</div>
+
+<div class="sidebar-section">
     <div class="sidebar-section-label">Gestión</div>
     <a href="{% url 'estudiantes:lista' %}" class="sidebar-link">
         <i class="bi bi-people"></i> Estudiantes
@@ -39,14 +46,11 @@
     </a>
 </div>
 
-{% if user.es_admin %}
+{% if user.es_admin or user.is_staff %}
 <div class="sidebar-section">
     <div class="sidebar-section-label">Administración</div>
     <a href="{% url 'usuarios:lista' %}" class="sidebar-link">
         <i class="bi bi-person-badge"></i> Usuarios del sistema
-    </a>
-    <a href="{% url 'reportes:dashboard' %}" class="sidebar-link">
-        <i class="bi bi-bar-chart-line"></i> Reportes
     </a>
     <a href="/admin/" class="sidebar-link" target="_blank">
         <i class="bi bi-gear"></i> Panel Django

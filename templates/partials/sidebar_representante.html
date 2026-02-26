@@ -12,9 +12,6 @@
     <a href="{% url 'estudiantes:lista' %}" class="sidebar-link">
         <i class="bi bi-person-lines-fill"></i> Mis estudiantes
     </a>
-    <a href="{% url 'estudiantes:crear' %}" class="sidebar-link">
-        <i class="bi bi-person-plus"></i> Registrar estudiante
-    </a>
 </div>
 
 <div class="sidebar-section">
@@ -24,6 +21,17 @@
     </a>
     <a href="{% url 'matriculas:crear' %}" class="sidebar-link">
         <i class="bi bi-plus-circle"></i> Nueva solicitud
+    </a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-label">Documentos</div>
+    <p style="font-size:.72rem;color:var(--gris-medio);padding:.25rem .75rem .1rem;margin:0;">
+        Ingresa a una matrícula para subir los documentos requeridos.
+    </p>
+    <a href="{% url 'matriculas:lista' %}" class="sidebar-link">
+        <i class="bi bi-folder2-open"></i> Ir a mis matrículas
+        <i class="bi bi-arrow-right ms-auto" style="font-size:.7rem;"></i>
     </a>
 </div>
 
