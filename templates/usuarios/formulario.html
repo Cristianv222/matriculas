@@ -161,6 +161,202 @@
                 </button>
             </div>
         </form>
+
+        {# ── Asignación de estudiantes (solo si es representante y ya está creado) ── #}
+        {% if form.instance.pk and form.instance.rol == 'REPRESENTANTE' %}
+        <div class="card mt-3" id="seccionEstudiantes">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span><i class="bi bi-people me-2"></i>Estudiantes a cargo</span>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                            data-bs-toggle="collapse" data-bs-target="#panelBuscar">
+                        <i class="bi bi-search me-1"></i>Asignar existente
+                    </button>
+                    <a href="{% url 'estudiantes:crear' %}?representante={{ form.instance.pk }}"
+                       class="btn btn-sm btn-institucional">
+                        <i class="bi bi-person-plus me-1"></i>Nuevo
+                    </a>
+                </div>
+            </div>
+
+            {# ── Panel búsqueda por cédula ── #}
+            <div class="collapse" id="panelBuscar">
+                <div style="background:#f8f9fa;border-bottom:1px solid var(--gris-borde);padding:.85rem 1rem;">
+                    <div style="font-size:.82rem;font-weight:600;color:var(--azul-marino);margin-bottom:.5rem;">
+                        <i class="bi bi-search me-1"></i>Buscar estudiante por cédula
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="text" id="inputCedula" class="form-control form-control-sm"
+                               placeholder="Ingrese la cédula del estudiante…"
+                               maxlength="13" style="max-width:260px;"
+                               onkeydown="if(event.key==='Enter'){event.preventDefault();buscarEstudiante();}">
+                        <button type="button" class="btn btn-sm btn-institucional" onclick="buscarEstudiante()">
+                            <i class="bi bi-search me-1"></i>Buscar
+                        </button>
+                    </div>
+                    {# Resultado de búsqueda #}
+                    <div id="resultadoBusqueda" class="mt-2" style="display:none;"></div>
+                </div>
+            </div>
+
+            {# ── Tabla de estudiantes ── #}
+            <div class="card-body p-0">
+                <table style="width:100%;font-size:.875rem;border-collapse:collapse;" id="tablaEstudiantes">
+                    <thead>
+                        <tr style="background:var(--gris-claro);">
+                            <th style="padding:.5rem 1rem;font-weight:600;">Estudiante</th>
+                            <th style="padding:.5rem 1rem;font-weight:600;">Cédula</th>
+                            <th style="padding:.5rem 1rem;font-weight:600;">Relación</th>
+                            <th style="padding:.5rem 1rem;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoEstudiantes">
+                        {% for est in form.instance.estudiantes.all %}
+                        <tr id="fila-est-{{ est.pk }}" style="border-bottom:1px solid var(--gris-borde);">
+                            <td style="padding:.55rem 1rem;font-weight:500;">{{ est.nombre_completo }}</td>
+                            <td style="padding:.55rem 1rem;color:var(--gris-medio);">{{ est.cedula|default:"—" }}</td>
+                            <td style="padding:.55rem 1rem;color:var(--gris-medio);">{{ est.relacion_representante }}</td>
+                            <td style="padding:.55rem 1rem;text-align:right;">
+                                <a href="{% url 'estudiantes:detalle' est.pk %}"
+                                   class="btn btn-sm btn-outline-secondary" style="padding:.2rem .5rem;font-size:.75rem;" title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'estudiantes:editar' est.pk %}"
+                                   class="btn btn-sm btn-outline-secondary ms-1" style="padding:.2rem .5rem;font-size:.75rem;" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" onclick="desasignar({{ est.pk }}, '{{ est.nombre_completo }}')"
+                                        class="btn btn-sm btn-outline-danger ms-1" style="padding:.2rem .5rem;font-size:.75rem;" title="Desasignar">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr id="filaVacia">
+                            <td colspan="4" style="padding:1.75rem;text-align:center;color:var(--gris-medio);">
+                                <i class="bi bi-person-x d-block mb-1" style="font-size:1.5rem;opacity:.35;"></i>
+                                Sin estudiantes asignados. Use los botones de arriba.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+        const REP_PK  = {{ form.instance.pk }};
+        const CSRF    = '{{ csrf_token }}';
+        const URL_BUSCAR    = "{% url 'usuarios:buscar-estudiante' form.instance.pk %}";
+        const URL_ASIGNAR   = "{% url 'usuarios:asignar-estudiante' form.instance.pk %}";
+        const URL_DESASIGNAR_BASE = "/usuarios/usuarios/" + REP_PK + "/desasignar/";
+
+        function buscarEstudiante() {
+            const cedula = document.getElementById('inputCedula').value.trim();
+            const div    = document.getElementById('resultadoBusqueda');
+            if (!cedula) return;
+
+            div.style.display = 'block';
+            div.innerHTML = '<span style="font-size:.82rem;color:var(--gris-medio);"><i class="bi bi-hourglass-split me-1"></i>Buscando…</span>';
+
+            fetch(URL_BUSCAR + '?cedula=' + encodeURIComponent(cedula))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        div.innerHTML = `<div style="background:#f8d7da;border-left:3px solid #dc3545;padding:.5rem .75rem;border-radius:0 4px 4px 0;font-size:.82rem;color:#842029;">
+                            <i class="bi bi-x-circle me-1"></i>${data.error}</div>`;
+                        return;
+                    }
+                    if (data.ya_asignado) {
+                        div.innerHTML = `<div style="background:#d1ecf1;border-left:3px solid #17a2b8;padding:.5rem .75rem;border-radius:0 4px 4px 0;font-size:.82rem;color:#0c5460;">
+                            <i class="bi bi-check-circle me-1"></i><strong>${data.nombre}</strong> ya está asignado a este representante.</div>`;
+                        return;
+                    }
+                    div.innerHTML = `
+                        <div style="background:#d4edda;border-left:3px solid #198754;padding:.6rem .85rem;border-radius:0 4px 4px 0;font-size:.85rem;color:#155724;">
+                            <div style="font-weight:600;margin-bottom:.2rem;"><i class="bi bi-person-check me-1"></i>${data.nombre}</div>
+                            <div style="font-size:.78rem;">Cédula: ${data.cedula} &nbsp;|&nbsp; Relación actual: ${data.relacion}</div>
+                            <button type="button" onclick="asignar(${data.id})"
+                                    class="btn btn-sm mt-2" style="background:#198754;color:#fff;font-size:.8rem;">
+                                <i class="bi bi-person-plus me-1"></i>Asignar a este representante
+                            </button>
+                        </div>`;
+                })
+                .catch(() => {
+                    div.innerHTML = '<span style="color:#dc3545;font-size:.82rem;">Error de conexión.</span>';
+                });
+        }
+
+        function asignar(estId) {
+            fetch(URL_ASIGNAR, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+                body: JSON.stringify({estudiante_id: estId})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                // Quitar fila vacía si existe
+                const filaVacia = document.getElementById('filaVacia');
+                if (filaVacia) filaVacia.remove();
+
+                // Agregar fila a la tabla
+                const tbody = document.getElementById('cuerpoEstudiantes');
+                const tr = document.createElement('tr');
+                tr.id = 'fila-est-' + data.id;
+                tr.style.borderBottom = '1px solid var(--gris-borde)';
+                tr.innerHTML = `
+                    <td style="padding:.55rem 1rem;font-weight:500;">${data.nombre}</td>
+                    <td style="padding:.55rem 1rem;color:var(--gris-medio);">${data.cedula}</td>
+                    <td style="padding:.55rem 1rem;color:var(--gris-medio);">${data.relacion}</td>
+                    <td style="padding:.55rem 1rem;text-align:right;">
+                        <a href="/estudiantes/${data.id}/" class="btn btn-sm btn-outline-secondary" style="padding:.2rem .5rem;font-size:.75rem;"><i class="bi bi-eye"></i></a>
+                        <a href="/estudiantes/${data.id}/editar/" class="btn btn-sm btn-outline-secondary ms-1" style="padding:.2rem .5rem;font-size:.75rem;"><i class="bi bi-pencil"></i></a>
+                        <button type="button" onclick="desasignar(${data.id}, '${data.nombre}')"
+                                class="btn btn-sm btn-outline-danger ms-1" style="padding:.2rem .5rem;font-size:.75rem;"><i class="bi bi-x"></i></button>
+                    </td>`;
+                tbody.appendChild(tr);
+
+                // Limpiar búsqueda
+                document.getElementById('inputCedula').value = '';
+                document.getElementById('resultadoBusqueda').style.display = 'none';
+                document.getElementById('panelBuscar').classList.remove('show');
+
+                // Notificación
+                const notif = document.createElement('div');
+                notif.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;background:#198754;color:#fff;padding:.6rem 1rem;border-radius:6px;font-size:.875rem;box-shadow:0 3px 12px rgba(0,0,0,.2);';
+                notif.innerHTML = `<i class="bi bi-check-circle me-1"></i>${data.nombre} asignado correctamente.`;
+                document.body.appendChild(notif);
+                setTimeout(() => notif.remove(), 3500);
+            });
+        }
+
+        function desasignar(estId, nombre) {
+            if (!confirm(`¿Desasignar a ${nombre} de este representante?\nEl estudiante quedará sin representante asignado.`)) return;
+            fetch(URL_DESASIGNAR_BASE + estId + '/', {
+                method: 'POST',
+                headers: {'X-CSRFToken': CSRF}
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    const fila = document.getElementById('fila-est-' + estId);
+                    if (fila) fila.remove();
+                    // Si no quedan filas, mostrar vacío
+                    const tbody = document.getElementById('cuerpoEstudiantes');
+                    if (tbody.querySelectorAll('tr').length === 0) {
+                        tbody.innerHTML = `<tr id="filaVacia"><td colspan="4" style="padding:1.75rem;text-align:center;color:var(--gris-medio);">
+                            <i class="bi bi-person-x d-block mb-1" style="font-size:1.5rem;opacity:.35;"></i>
+                            Sin estudiantes asignados.</td></tr>`;
+                    }
+                }
+            });
+        }
+        </script>
+        {% endif %}
     </div>
 
     {# Columna lateral: ayuda de roles #}

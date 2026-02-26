@@ -1,0 +1,6 @@
+{% if valor and valor != "None" and valor != "—" and valor != " años" %}
+<tr>
+    <td style="padding:.35rem 0;color:var(--gris-medio);width:42%;vertical-align:top;">{{ label }}</td>
+    <td style="padding:.35rem 0;font-weight:500;word-break:break-word;">{{ valor }}</td>
+</tr>
+{% endif %}

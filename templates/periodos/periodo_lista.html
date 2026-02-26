@@ -1,140 +1,70 @@
 {% extends "base.html" %}
-{% block title %}{{ titulo|default:"Período Académico" }}{% endblock %}
+{% block title %}Períodos Académicos{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <div class="d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div>
-            <h1><i class="bi bi-calendar-plus me-2" style="color:var(--acento);"></i>{{ titulo|default:"Período Académico" }}</h1>
+            <h1><i class="bi bi-calendar3 me-2" style="color:var(--acento);"></i>Períodos Académicos</h1>
             <nav aria-label="breadcrumb"><ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'periodos:periodo-lista' %}">Períodos</a></li>
-                <li class="breadcrumb-item active">{{ titulo }}</li>
+                <li class="breadcrumb-item"><a href="{% url 'usuarios:dashboard-admin' %}">Inicio</a></li>
+                <li class="breadcrumb-item active">Períodos</li>
             </ol></nav>
+        </div>
+        <a href="{% url 'periodos:periodo-crear' %}" class="btn btn-institucional btn-sm">
+            <i class="bi bi-plus me-1"></i>Nuevo período
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table tabla-institucional mb-0">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Régimen</th>
+                        <th>Inicio clases</th>
+                        <th>Fin año lectivo</th>
+                        <th>Matrículas</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in periodos %}
+                    <tr>
+                        <td style="font-weight:500;">{{ p.nombre }}</td>
+                        <td style="font-size:.83rem;">{{ p.get_regimen_display|default:"—" }}</td>
+                        <td style="font-size:.83rem;">{{ p.fecha_inicio|date:"d/m/Y" }}</td>
+                        <td style="font-size:.83rem;">{{ p.fecha_fin|date:"d/m/Y" }}</td>
+                        <td style="font-size:.83rem;">{{ p.fecha_inicio_matriculas|date:"d/m/Y" }} — {{ p.fecha_fin_matriculas|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if p.es_activo %}
+                            <span class="badge" style="background:#198754;">Activo</span>
+                            {% else %}
+                            <span class="badge" style="background:#6c757d;">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'periodos:periodo-editar' p.pk %}" class="btn btn-sm btn-outline-secondary" style="padding:.2rem .5rem;">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5" style="color:var(--gris-medio);">
+                            <i class="bi bi-calendar-x d-block mb-2" style="font-size:2rem;opacity:.4;"></i>
+                            No hay períodos registrados.
+                            <a href="{% url 'periodos:periodo-crear' %}" class="d-block mt-2">Crear el primer período</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <form method="post" novalidate>
-            {% csrf_token %}
-
-            <div class="card mb-3">
-                <div class="card-header"><i class="bi bi-info-circle me-2"></i>Datos generales</div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-8">
-                            <label class="form-label">Nombre del período <span class="text-danger">*</span></label>
-                            {{ form.nombre }}
-                            {% if form.nombre.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.nombre.errors|first }}</div>{% endif %}
-                            <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.25rem;">Ej: 2024-2025 Sierra</div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Régimen</label>
-                            {{ form.regimen }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Inicio de clases <span class="text-danger">*</span></label>
-                            {{ form.fecha_inicio }}
-                            {% if form.fecha_inicio.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.fecha_inicio.errors|first }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Fin del año lectivo <span class="text-danger">*</span></label>
-                            {{ form.fecha_fin }}
-                            {% if form.fecha_fin.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.fecha_fin.errors|first }}</div>{% endif %}
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check">
-                                {{ form.es_activo }}
-                                <label class="form-check-label" for="{{ form.es_activo.id_for_label }}" style="font-size:.875rem;">
-                                    <strong>Período activo</strong>
-                                    <span style="font-size:.78rem;color:var(--gris-medio);display:block;">
-                                        Al activar este período, se desactivarán los demás automáticamente.
-                                    </span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-header"><i class="bi bi-calendar-check me-2"></i>Ventana de matrículas</div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Inicio de matrículas <span class="text-danger">*</span></label>
-                            {{ form.fecha_inicio_matriculas }}
-                            {% if form.fecha_inicio_matriculas.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.fecha_inicio_matriculas.errors|first }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Fin de matrículas <span class="text-danger">*</span></label>
-                            {{ form.fecha_fin_matriculas }}
-                            {% if form.fecha_fin_matriculas.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.fecha_fin_matriculas.errors|first }}</div>{% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-header">
-                    <div class="form-check mb-0">
-                        {{ form.permite_matricula_extra }}
-                        <label class="form-check-label" for="{{ form.permite_matricula_extra.id_for_label }}" style="font-size:.9rem;font-weight:600;">
-                            <i class="bi bi-star me-1"></i>Habilitar matrículas extraordinarias
-                        </label>
-                    </div>
-                </div>
-                <div class="card-body" id="bloqueExtra" style="{% if not form.instance.permite_matricula_extra %}display:none;{% endif %}">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Inicio extraordinarias</label>
-                            {{ form.fecha_inicio_extra }}
-                            {% if form.fecha_inicio_extra.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.fecha_inicio_extra.errors|first }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Fin extraordinarias</label>
-                            {{ form.fecha_fin_extra }}
-                            {% if form.fecha_fin_extra.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.fecha_fin_extra.errors|first }}</div>{% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-header"><i class="bi bi-chat-text me-2"></i>Observaciones</div>
-                <div class="card-body">
-                    {{ form.observaciones }}
-                </div>
-            </div>
-
-            {% if form.non_field_errors %}
-            <div style="border-left:4px solid #dc3545;background:#f8d7da;color:#842029;padding:.65rem 1rem;border-radius:4px;font-size:.85rem;margin-bottom:1rem;">
-                {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
-            </div>
-            {% endif %}
-
-            <div class="d-flex gap-2 justify-content-end">
-                <a href="{% url 'periodos:periodo-lista' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-x me-1"></i>Cancelar
-                </a>
-                <button type="submit" class="btn btn-institucional">
-                    <i class="bi bi-check2 me-1"></i>{{ accion|default:"Guardar" }}
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-const chk = document.getElementById('{{ form.permite_matricula_extra.id_for_label }}');
-const blq = document.getElementById('bloqueExtra');
-if (chk) {
-    chk.addEventListener('change', () => {
-        blq.style.display = chk.checked ? '' : 'none';
-    });
-}
-</script>
 {% endblock %}

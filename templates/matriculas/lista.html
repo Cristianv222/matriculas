@@ -1,0 +1,171 @@
+
+{% extends "base.html" %}
+{% block title %}Matrículas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h1><i class="bi bi-file-earmark-text me-2" style="color:var(--acento);"></i>Matrículas</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'usuarios:dashboard-admin' %}">Inicio</a></li>
+                    <li class="breadcrumb-item active">Matrículas</li>
+                </ol>
+            </nav>
+        </div>
+        {% if user.es_secretaria %}
+        <a href="{% url 'matriculas:crear' %}" class="btn btn-institucional btn-sm">
+            <i class="bi bi-plus me-1"></i>Nueva matrícula
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Contadores rápidos ── #}
+<div class="row g-2 mb-3">
+    {% for estado, label in estados %}
+    <div class="col-6 col-md-3 col-lg-2">
+        <div class="card text-center" style="padding:.65rem .5rem;cursor:pointer;"
+             onclick="location.href='?estado={{ estado }}'">
+            <div style="font-family:var(--fuente-display);font-weight:700;font-size:1.4rem;
+                color:{% if estado == 'APROBADA' %}#198754{% elif estado == 'RECHAZADA' %}#dc3545{% elif estado == 'PENDIENTE' %}#c8a84b{% else %}var(--azul-marino){% endif %};">
+                {{ conteos|default_if_none:0 }}
+            </div>
+            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-medio);">{{ label }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{# ── Filtros ── #}
+<div class="card mb-3">
+    <div class="card-body py-2 px-3">
+        <form method="get" class="row g-2 align-items-end" action="{% url 'matriculas:lista' %}">
+            <div class="col-12 col-sm-5 col-lg-4">
+                <label class="form-label" style="font-size:.78rem;">Buscar</label>
+                <input type="text" name="q" class="form-control form-control-sm"
+                       placeholder="Código, estudiante…"
+                       value="{{ busqueda }}">
+            </div>
+            <div class="col-6 col-sm-3 col-lg-2">
+                <label class="form-label" style="font-size:.78rem;">Estado</label>
+                <select name="estado" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    {% for est, lbl in estados %}
+                    <option value="{{ est }}" {% if estado_seleccionado == est %}selected{% endif %}>{{ lbl }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-institucional">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+                {% if busqueda or estado_seleccionado %}
+                <a href="{% url 'matriculas:lista' %}" class="btn btn-sm btn-outline-secondary ms-1">
+                    <i class="bi bi-x"></i>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ── Tabla ── #}
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <span>Resultados
+            {% if page_obj %}<span class="text-muted ms-1" style="font-size:.82rem;font-weight:400;">— {{ page_obj.paginator.count }} registros</span>{% endif %}
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table tabla-institucional mb-0">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Estudiante</th>
+                        {% if user.es_secretaria %}<th>Representante</th>{% endif %}
+                        <th>Paralelo</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th style="text-align:center;">Días</th>
+                        <th>Fecha</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in matriculas %}
+                    <tr>
+                        <td><code style="font-size:.8rem;">{{ m.codigo }}</code></td>
+                        <td style="font-weight:500;">{{ m.estudiante.nombre_completo }}</td>
+                        {% if user.es_secretaria %}
+                        <td style="font-size:.83rem;">{{ m.solicitante.get_full_name|default:m.solicitante.username }}</td>
+                        {% endif %}
+                        <td style="font-size:.83rem;">{{ m.paralelo }}</td>
+                        <td style="font-size:.78rem;color:var(--gris-medio);">{{ m.get_tipo_display }}</td>
+                        <td>
+                            {% if m.estado == 'APROBADA' %}
+                                <span class="badge" style="background:#198754;">Aprobada</span>
+                            {% elif m.estado == 'PENDIENTE' %}
+                                <span class="badge" style="background:#c8a84b;color:#000;">Pendiente</span>
+                            {% elif m.estado == 'EN_REVISION' %}
+                                <span class="badge" style="background:#0dcaf0;color:#000;">En revisión</span>
+                            {% elif m.estado == 'RECHAZADA' %}
+                                <span class="badge" style="background:#dc3545;">Rechazada</span>
+                            {% else %}
+                                <span class="badge" style="background:#6c757d;">{{ m.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:center;font-size:.82rem;">{{ m.dias_en_proceso }}d</td>
+                        <td style="font-size:.8rem;color:var(--gris-medio);white-space:nowrap;">{{ m.fecha_solicitud|date:"d/m/Y" }}</td>
+                        <td>
+                            <a href="{% url 'matriculas:detalle' m.pk %}" class="btn btn-sm btn-outline-secondary" style="padding:.2rem .5rem;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5" style="color:var(--gris-medio);">
+                            <i class="bi bi-inbox d-block mb-2" style="font-size:2rem;opacity:.4;"></i>
+                            No se encontraron matrículas con los filtros aplicados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white border-top py-2 d-flex justify-content-center">
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&q={{ busqueda }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% if busqueda %}&q={{ busqueda }}{% endif %}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&q={{ busqueda }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

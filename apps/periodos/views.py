@@ -121,8 +121,21 @@ class NivelCreateView(LoginRequiredMixin, AdminRequeridoMixin, CreateView):
     success_url   = reverse_lazy('periodos:nivel-lista')
 
     def form_valid(self, form):
-        messages.success(self.request, f'Nivel "{form.instance.nombre}" creado.')
-        return super().form_valid(form)
+        nivel = form.save()
+        # Soporte AJAX (modal desde paralelo_formulario)
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({'id': nivel.pk, 'nombre': nivel.nombre})
+        messages.success(self.request, f'Nivel "{nivel.nombre}" creado.')
+        return redirect(self.success_url)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            errores = {f: e.get_json_data() for f, e in form.errors.items()}
+            primer_error = next(iter(form.errors.values()))[0]
+            return JsonResponse({'error': primer_error}, status=400)
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

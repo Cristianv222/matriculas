@@ -17,7 +17,9 @@
         <div class="card">
             <div class="card-header"><i class="bi bi-sliders me-2"></i>Configuración del paralelo</div>
             <div class="card-body">
-                <form method="post" action="{% if form.instance.pk %}{% url 'periodos:paralelo-editar' form.instance.pk %}{% else %}{% url 'periodos:paralelo-crear' %}{% endif %}" novalidate>
+                <form method="post"
+                      action="{% if form.instance.pk %}{% url 'periodos:paralelo-editar' form.instance.pk %}{% else %}{% url 'periodos:paralelo-crear' %}{% endif %}"
+                      novalidate>
                     {% csrf_token %}
                     <div class="row g-3">
                         <div class="col-12">
@@ -25,10 +27,20 @@
                             {{ form.periodo }}
                             {% if form.periodo.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.periodo.errors|first }}</div>{% endif %}
                         </div>
-                        <div class="col-md-8">
-                            <label class="form-label">Nivel / Grado <span class="text-danger">*</span></label>
+                        <div class="col-12">
+                            <label class="form-label d-flex align-items-center justify-content-between">
+                                <span>Nivel / Grado <span class="text-danger">*</span></span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        style="font-size:.75rem;padding:.15rem .55rem;"
+                                        data-bs-toggle="modal" data-bs-target="#modalNivel">
+                                    <i class="bi bi-plus me-1"></i>Crear nivel
+                                </button>
+                            </label>
                             {{ form.nivel }}
                             {% if form.nivel.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.nivel.errors|first }}</div>{% endif %}
+                            <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.2rem;">
+                                ¿No aparece el nivel? Créalo con el botón de arriba.
+                            </div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Paralelo <span class="text-danger">*</span></label>
@@ -36,11 +48,11 @@
                             {% if form.nombre.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.nombre.errors|first }}</div>{% endif %}
                             <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.2rem;">Ej: A, B, C</div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Jornada</label>
                             {{ form.jornada }}
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Cupo máximo</label>
                             {{ form.cupo_maximo }}
                             {% if form.cupo_maximo.errors %}<div style="font-size:.78rem;color:#dc3545;">{{ form.cupo_maximo.errors|first }}</div>{% endif %}
@@ -85,7 +97,8 @@
                     </div>
                     <div class="col-4">
                         <div style="font-size:.7rem;color:var(--gris-medio);text-transform:uppercase;letter-spacing:.06em;">Disponible</div>
-                        <div style="font-size:1.5rem;font-family:'Lora',serif;font-weight:700;color:{% if form.instance.cupo_disponible == 0 %}#dc3545{% else %}#198754{% endif %};">
+                        <div style="font-size:1.5rem;font-family:'Lora',serif;font-weight:700;
+                            color:{% if form.instance.cupo_disponible == 0 %}#dc3545{% else %}#198754{% endif %};">
                             {{ form.instance.cupo_disponible }}
                         </div>
                     </div>
@@ -103,4 +116,152 @@
         {% endif %}
     </div>
 </div>
+
+<div class="modal fade" id="modalNivel" tabindex="-1" aria-labelledby="modalNivelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background:var(--azul-marino);color:#fff;">
+                <h5 class="modal-title" id="modalNivelLabel">
+                    <i class="bi bi-layers me-2"></i>Crear nuevo nivel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {# Alerta resultado #}
+                <div id="nivelAlerta" style="display:none;" class="mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" id="nivelNombre" class="form-control"
+                               placeholder="Ej: 1ro EGB, 5to EGB, 1ro BGU…">
+                        <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.2rem;">
+                            Use el formato oficial: 1ro EGB, 2do EGB … 10mo EGB, 1ro BGU, 2do BGU, 3ro BGU
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Subnivel educativo</label>
+                        <select id="nivelSubnivel" class="form-select">
+                            <option value="">— Sin especificar —</option>
+                            <option value="PREPARATORIA">Preparatoria (1ro EGB)</option>
+                            <option value="ELEMENTAL">Elemental (2do – 4to EGB)</option>
+                            <option value="MEDIA">Media (5to – 7mo EGB)</option>
+                            <option value="SUPERIOR">Superior (8vo – 10mo EGB)</option>
+                            <option value="BGU">BGU (1ro – 3ro BGU)</option>
+                            <option value="TECNICO">Bachillerato Técnico</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Orden</label>
+                        <input type="number" id="nivelOrden" class="form-control" min="1" max="20" value="1">
+                        <div style="font-size:.75rem;color:var(--gris-medio);margin-top:.2rem;">Para ordenar</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" id="nivelDescripcion" class="form-control"
+                               placeholder="Opcional">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-institucional" id="btnGuardarNivel">
+                    <i class="bi bi-check2 me-1"></i>Crear nivel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Crear nivel via AJAX ──────────────────────────────────────────────────────
+document.getElementById('btnGuardarNivel').addEventListener('click', function() {
+    const nombre    = document.getElementById('nivelNombre').value.trim();
+    const subnivel  = document.getElementById('nivelSubnivel').value;
+    const orden     = document.getElementById('nivelOrden').value;
+    const descripcion = document.getElementById('nivelDescripcion').value.trim();
+    const alerta    = document.getElementById('nivelAlerta');
+    const btn       = this;
+
+    if (!nombre) {
+        alerta.style.display = 'block';
+        alerta.innerHTML = '<div style="background:#f8d7da;border-left:3px solid #dc3545;padding:.5rem .75rem;border-radius:0 4px 4px 0;font-size:.83rem;color:#842029;"><i class="bi bi-x-circle me-1"></i>El nombre es obligatorio.</div>';
+        document.getElementById('nivelNombre').focus();
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando…';
+    alerta.style.display = 'none';
+
+    fetch('{% url "periodos:nivel-crear" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: new URLSearchParams({
+            nombre: nombre,
+            subnivel: subnivel,
+            orden: orden,
+            descripcion: descripcion,
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Crear nivel';
+
+        if (data.error) {
+            alerta.style.display = 'block';
+            alerta.innerHTML = `<div style="background:#f8d7da;border-left:3px solid #dc3545;padding:.5rem .75rem;border-radius:0 4px 4px 0;font-size:.83rem;color:#842029;"><i class="bi bi-x-circle me-1"></i>${data.error}</div>`;
+            return;
+        }
+
+        // Agregar la nueva opción al select de niveles y seleccionarla
+        const sel = document.getElementById('id_nivel');
+        const opt = document.createElement('option');
+        opt.value = data.id;
+        opt.text  = data.nombre;
+        opt.selected = true;
+        sel.appendChild(opt);
+
+        // Cerrar modal y limpiar
+        bootstrap.Modal.getInstance(document.getElementById('modalNivel')).hide();
+        document.getElementById('nivelNombre').value = '';
+        document.getElementById('nivelSubnivel').value = '';
+        document.getElementById('nivelOrden').value = '1';
+        document.getElementById('nivelDescripcion').value = '';
+
+        // Toast de confirmación
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;background:#198754;color:#fff;padding:.6rem 1rem;border-radius:6px;font-size:.875rem;box-shadow:0 3px 12px rgba(0,0,0,.2);';
+        toast.innerHTML = `<i class="bi bi-check-circle me-1"></i>Nivel "<strong>${data.nombre}</strong>" creado y seleccionado.`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Crear nivel';
+        alerta.style.display = 'block';
+        alerta.innerHTML = '<div style="background:#f8d7da;border-left:3px solid #dc3545;padding:.5rem .75rem;border-radius:0 4px 4px 0;font-size:.83rem;color:#842029;">Error de conexión. Intente de nuevo.</div>';
+    });
+});
+
+// Limpiar alerta al abrir modal
+document.getElementById('modalNivel').addEventListener('show.bs.modal', () => {
+    document.getElementById('nivelAlerta').style.display = 'none';
+    document.getElementById('nivelNombre').value = '';
+});
+
+// Enter en el campo nombre dispara guardar
+document.getElementById('nivelNombre').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btnGuardarNivel').click(); }
+});
+</script>
 {% endblock %}
